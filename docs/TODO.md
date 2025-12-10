@@ -92,6 +92,15 @@
     - [x] `ChartDataPoint` 인터페이스 (Bar Chart용 데이터 포인트)
     - [x] `DonutChartDataPoint` 인터페이스 (Donut Chart용 데이터 포인트)
     - [x] JSDoc 주석 추가 (모든 타입에 설명 포함)
+  - [x] `lib/types/database.ts` 생성
+    - [x] `User` 인터페이스 (users 테이블)
+    - [x] `Bookmark` 인터페이스 (bookmarks 테이블)
+    ---
+    - [x] `BookmarkWithTour` 인터페이스 (북마크 + 관광지 정보 조인 타입)
+    - [x] `UserWithBookmarks` 인터페이스 (사용자 + 북마크 목록 조인 타입)
+    - [x] `CreateBookmarkInput` 인터페이스 (북마크 생성 입력 타입)
+    - [x] `BookmarkResponse` 인터페이스 (북마크 API 응답 타입)
+    - [x] JSDoc 주석 추가 (모든 타입에 설명 포함)
 - [ ] 레이아웃 구조
   - [ ] `app/layout.tsx` 업데이트
     - [ ] 메타데이터 설정
