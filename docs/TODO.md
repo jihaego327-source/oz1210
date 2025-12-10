@@ -101,13 +101,19 @@
     - [x] `CreateBookmarkInput` 인터페이스 (북마크 생성 입력 타입)
     - [x] `BookmarkResponse` 인터페이스 (북마크 API 응답 타입)
     - [x] JSDoc 주석 추가 (모든 타입에 설명 포함)
-- [ ] 레이아웃 구조
-  - [ ] `app/layout.tsx` 업데이트
-    - [ ] 메타데이터 설정
-    - [ ] 헤더/푸터 구조 확인
-  - [ ] `components/Navbar.tsx` 업데이트
-    - [ ] 로고, 검색창, 로그인 버튼
-    - [ ] 네비게이션 링크 (홈, 통계, 북마크)
+- [x] 레이아웃 구조
+  - [x] `app/layout.tsx` 업데이트
+    - [x] 메타데이터 설정 (title, description을 My Trip 프로젝트에 맞게 변경)
+    - [x] Open Graph 메타태그 추가 (og:title, og:description, og:type, og:image)
+    - [x] Twitter Card 메타태그 추가
+    - [x] 헤더/푸터 구조 확인
+  - [x] `components/Navbar.tsx` 업데이트
+    - [x] 로고 변경 (My Trip)
+    - [x] 네비게이션 링크 추가 (홈, 통계, 북마크) - 반응형 디자인 적용
+    - [x] 검색창 UI 추가 (검색 아이콘, 입력 필드) - 기능은 Phase 2에서 구현
+    - [x] 현재 페이지 하이라이트 처리
+    - [x] 모바일 네비게이션 추가
+    - [x] 로그인 버튼 유지
 - [ ] 공통 컴포넌트
   - [ ] `components/ui/loading.tsx` - 로딩 스피너
   - [ ] `components/ui/skeleton.tsx` - 스켈레톤 UI
