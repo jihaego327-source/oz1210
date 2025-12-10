@@ -9,6 +9,21 @@
  */
 
 /**
+ * 콘텐츠 타입 ID와 한글 이름 매핑
+ * 카드에 표시할 타입 뱃지 텍스트로 사용됩니다.
+ */
+export const CONTENT_TYPE_NAMES: Record<string, string> = {
+  '12': '관광지',
+  '14': '문화시설',
+  '15': '축제/행사',
+  '25': '여행코스',
+  '28': '레포츠',
+  '32': '숙박',
+  '38': '쇼핑',
+  '39': '음식점',
+} as const;
+
+/**
  * 관광지 목록 항목 (areaBasedList2, searchKeyword2 응답)
  */
 export interface TourItem {
