@@ -23,3 +23,436 @@
 - [ ] `tsconfig.json` 파일
 - [ ] `eslint.config.mjs` 파일
 - [ ] `AGENTS.md` 파일
+
+
+
+
+
+
+
+
+
+# My Trip - 개발 TODO 리스트
+
+> PRD, Flowchart, Design 문서 기반 작업 항목 정리
+
+## Phase 1: 기본 구조 & 공통 설정
+
+- [ ] 프로젝트 셋업
+  - [ ] 환경변수 설정 (`.env`)
+    - [ ] `NEXT_PUBLIC_TOUR_API_KEY` (한국관광공사 API)
+    - [ ] `TOUR_API_KEY` (서버 사이드용)
+    - [ ] `NEXT_PUBLIC_NAVER_MAP_CLIENT_ID` (네이버 지도)
+    - [ ] Clerk 인증 키 확인
+    - [ ] Supabase 키 확인
+- [x] API 클라이언트 구현
+  - [x] `lib/api/tour-api.ts` 생성
+    - [x] `getAreaCode()` - 지역코드 조회 (`areaCode2`)
+    - [x] `getAreaBasedList()` - 지역 기반 목록 (`areaBasedList2`)
+    - [x] `searchKeyword()` - 키워드 검색 (`searchKeyword2`)
+    - [x] `getDetailCommon()` - 공통 정보 (`detailCommon2`)
+    - [x] `getDetailIntro()` - 소개 정보 (`detailIntro2`)
+    - [x] `getDetailImage()` - 이미지 목록 (`detailImage2`)
+    - [x] `getDetailPetTour()` - 반려동물 정보 (`detailPetTour2`)
+    - [x] 공통 파라미터 처리 (serviceKey, MobileOS, MobileApp, _type)
+    - [x] 에러 처리 및 재시도 로직
+    ---
+    - [x] `TourApiError` 커스텀 에러 클래스 구현
+    - [x] 재시도 로직 구현 (최대 3회, 지수 백오프: 1초, 2초, 4초)
+    - [x] 에러 타입 구분 (network, api, parse, unknown)
+    - [x] 에러 메시지 한글화
+    - [x] URL 파라미터 빌더 함수 (`buildQueryParams`)
+    - [x] API 응답 파싱 및 검증 함수 (`parseApiResponse`)
+    - [x] 배열 응답 추출 함수 (`extractItems`)
+    - [x] 페이지네이션 정보 계산 함수 (`calculatePagination`)
+    - [x] 좌표 변환 헬퍼 함수 (`convertKATECToWGS84`)
+    - [x] 환경변수 처리 함수 (`getApiKey` - TOUR_API_KEY 우선, 없으면 NEXT_PUBLIC_TOUR_API_KEY)
+    - [x] JSDoc 주석 추가 (모든 함수에 파라미터, 반환값, 사용 예시 포함)
+- [x] 타입 정의
+  - [x] `lib/types/tour.ts` 생성
+    - [x] `TourItem` 인터페이스 (목록)
+    - [x] `TourDetail` 인터페이스 (상세)
+    - [x] `TourIntro` 인터페이스 (운영정보)
+    - [x] `TourImage` 인터페이스 (이미지)
+    - [x] `PetTourInfo` 인터페이스 (반려동물)
+    ---
+    - [x] `AreaCode` 인터페이스 (지역 코드)
+    - [x] `TourApiResponse<T>` 제네릭 타입 (API 응답 래퍼)
+    - [x] `PaginationInfo` 인터페이스 (페이지네이션 정보)
+    - [x] `TourListResponse` 인터페이스 (관광지 목록 응답)
+    - [x] `SearchResponse` 인터페이스 (검색 결과 응답)
+  - [x] `lib/types/stats.ts` 생성
+    - [x] `RegionStats` 인터페이스
+    - [x] `TypeStats` 인터페이스
+    - [x] `StatsSummary` 인터페이스
+    ---
+    - [x] `CONTENT_TYPE_NAMES` 상수 객체 (타입 ID와 이름 매핑)
+    - [x] `TopRegion` 인터페이스 (Top 3 지역 정보)
+    - [x] `TopType` 인터페이스 (Top 3 타입 정보)
+    - [x] `ChartDataPoint` 인터페이스 (Bar Chart용 데이터 포인트)
+    - [x] `DonutChartDataPoint` 인터페이스 (Donut Chart용 데이터 포인트)
+    - [x] JSDoc 주석 추가 (모든 타입에 설명 포함)
+- [ ] 레이아웃 구조
+  - [ ] `app/layout.tsx` 업데이트
+    - [ ] 메타데이터 설정
+    - [ ] 헤더/푸터 구조 확인
+  - [ ] `components/Navbar.tsx` 업데이트
+    - [ ] 로고, 검색창, 로그인 버튼
+    - [ ] 네비게이션 링크 (홈, 통계, 북마크)
+- [ ] 공통 컴포넌트
+  - [ ] `components/ui/loading.tsx` - 로딩 스피너
+  - [ ] `components/ui/skeleton.tsx` - 스켈레톤 UI
+  - [ ] `components/ui/error.tsx` - 에러 메시지
+  - [ ] `components/ui/toast.tsx` - 토스트 알림 (shadcn/ui)
+
+## Phase 2: 홈페이지 (`/`) - 관광지 목록
+
+- [ ] 페이지 기본 구조
+  - [ ] `app/page.tsx` 생성
+    - [ ] 기본 레이아웃 (헤더, 메인, 푸터)
+    - [ ] 반응형 컨테이너 설정
+- [ ] 관광지 목록 기능 (MVP 2.1)
+  - [ ] `components/tour-card.tsx` 생성
+    - [ ] 썸네일 이미지 (기본 이미지 fallback)
+    - [ ] 관광지명
+    - [ ] 주소 표시
+    - [ ] 관광 타입 뱃지
+    - [ ] 간단한 개요 (1-2줄)
+    - [ ] 호버 효과 (scale, shadow)
+    - [ ] 클릭 시 상세페이지 이동
+  - [ ] `components/tour-list.tsx` 생성
+    - [ ] 그리드 레이아웃 (반응형)
+    - [ ] 카드 목록 표시
+    - [ ] 로딩 상태 (Skeleton UI)
+    - [ ] 빈 상태 처리
+  - [ ] API 연동
+    - [ ] `getAreaBasedList()` 호출
+    - [ ] 데이터 파싱 및 표시
+    - [ ] 에러 처리
+- [ ] 필터 기능
+  - [ ] `components/tour-filters.tsx` 생성
+    - [ ] 지역 필터 (시/도 선택)
+      - [ ] `getAreaCode()` API로 지역 목록 로드
+      - [ ] 드롭다운 또는 버튼 그룹
+      - [ ] "전체" 옵션
+    - [ ] 관광 타입 필터
+      - [ ] 관광지(12), 문화시설(14), 축제/행사(15), 여행코스(25), 레포츠(28), 숙박(32), 쇼핑(38), 음식점(39)
+      - [ ] 다중 선택 가능
+      - [ ] "전체" 옵션
+    - [ ] 반려동물 동반 가능 필터 (MVP 2.5)
+      - [ ] 토글 버튼
+      - [ ] 크기별 필터 (소형, 중형, 대형)
+    - [ ] 정렬 옵션
+      - [ ] 최신순 (modifiedtime)
+      - [ ] 이름순 (가나다)
+    - [ ] 필터 상태 관리 (URL 쿼리 파라미터 또는 상태)
+  - [ ] 필터 적용 로직
+    - [ ] 필터 변경 시 API 재호출
+    - [ ] 필터 조합 처리
+- [ ] 검색 기능 (MVP 2.3)
+  - [ ] `components/tour-search.tsx` 생성
+    - [ ] 검색창 UI (헤더 또는 메인 영역)
+    - [ ] 검색 아이콘
+    - [ ] 엔터 또는 버튼 클릭으로 검색
+    - [ ] 검색 중 로딩 스피너
+  - [ ] 검색 API 연동
+    - [ ] `searchKeyword()` 호출
+    - [ ] 검색 결과 표시
+    - [ ] 검색 결과 개수 표시
+    - [ ] 결과 없음 메시지
+  - [ ] 검색 + 필터 조합
+    - [ ] 키워드 + 지역 필터
+    - [ ] 키워드 + 타입 필터
+    - [ ] 모든 필터 동시 적용
+- [ ] 네이버 지도 연동 (MVP 2.2)
+  - [ ] `components/naver-map.tsx` 생성
+    - [ ] Naver Maps API v3 초기화
+    - [ ] 지도 컨테이너 설정
+    - [ ] 초기 중심 좌표 설정
+    - [ ] 줌 레벨 설정
+  - [ ] 마커 표시
+    - [ ] 관광지 목록을 마커로 표시
+    - [ ] 좌표 변환 (KATEC → WGS84: mapx/mapy / 10000000)
+    - [ ] 마커 클릭 시 인포윈도우
+      - [ ] 관광지명
+      - [ ] 간단한 설명
+      - [ ] "상세보기" 버튼
+    - [ ] 관광 타입별 마커 색상 구분 (선택 사항)
+  - [ ] 지도-리스트 연동
+    - [ ] 리스트 항목 클릭 → 지도 이동 및 마커 강조
+    - [ ] 리스트 항목 호버 → 마커 강조 (선택 사항)
+    - [ ] 마커 클릭 → 리스트 항목 강조
+  - [ ] 지도 컨트롤
+    - [ ] 줌 인/아웃 버튼
+    - [ ] 지도 유형 선택 (일반/스카이뷰)
+    - [ ] 현재 위치 버튼 (선택 사항)
+  - [ ] 반응형 레이아웃
+    - [ ] 데스크톱: 리스트(좌측 50%) + 지도(우측 50%) 분할
+    - [ ] 모바일: 탭 형태로 리스트/지도 전환
+- [ ] 페이지네이션
+  - [ ] 무한 스크롤 구현
+    - [ ] Intersection Observer 사용
+    - [ ] 하단 로딩 인디케이터
+    - [ ] 페이지당 10-20개 항목
+  - [ ] 또는 페이지 번호 선택 방식
+- [ ] 최종 통합 및 스타일링
+  - [ ] 모든 기능 통합 테스트
+  - [ ] 반응형 디자인 확인 (모바일/태블릿/데스크톱)
+  - [ ] 로딩 상태 개선
+  - [ ] 에러 처리 개선
+
+## Phase 3: 상세페이지 (`/places/[contentId]`)
+
+- [ ] 페이지 기본 구조
+  - [ ] `app/places/[contentId]/page.tsx` 생성
+    - [ ] 동적 라우팅 설정
+    - [ ] 뒤로가기 버튼 (헤더)
+    - [ ] 기본 레이아웃 구조
+    - [ ] 라우팅 테스트
+- [ ] 기본 정보 섹션 (MVP 2.4.1)
+  - [ ] `components/tour-detail/detail-info.tsx` 생성
+    - [ ] `getDetailCommon()` API 연동
+    - [ ] 관광지명 (대제목)
+    - [ ] 대표 이미지 (크게 표시)
+    - [ ] 주소 표시 및 복사 기능
+      - [ ] 클립보드 API 사용
+      - [ ] 복사 완료 토스트
+    - [ ] 전화번호 (클릭 시 전화 연결)
+    - [ ] 홈페이지 (링크)
+    - [ ] 개요 (긴 설명문)
+    - [ ] 관광 타입 및 카테고리 뱃지
+    - [ ] 정보 없는 항목 숨김 처리
+- [ ] 운영 정보 섹션 (MVP 2.4.2)
+  - [ ] `components/tour-detail/detail-intro.tsx` 생성
+    - [ ] `getDetailIntro()` API 연동
+    - [ ] 운영시간/개장시간
+    - [ ] 휴무일
+    - [ ] 이용요금
+    - [ ] 주차 가능 여부
+    - [ ] 수용인원
+    - [ ] 체험 프로그램
+    - [ ] 유모차/반려동물 동반 가능 여부
+    - [ ] 정보 없는 항목 숨김 처리
+- [ ] 이미지 갤러리 (MVP 2.4.3)
+  - [ ] `components/tour-detail/detail-gallery.tsx` 생성
+    - [ ] `getDetailImage()` API 연동
+    - [ ] 대표 이미지 + 서브 이미지들
+    - [ ] 이미지 슬라이드 기능 (Swiper 또는 캐러셀)
+    - [ ] 이미지 클릭 시 전체화면 모달
+    - [ ] 이미지 없으면 기본 이미지
+    - [ ] Next.js Image 컴포넌트 사용 (최적화)
+- [ ] 지도 섹션 (MVP 2.4.4)
+  - [ ] `components/tour-detail/detail-map.tsx` 생성
+    - [ ] 해당 관광지 위치 표시
+    - [ ] 마커 1개 표시
+    - [ ] "길찾기" 버튼
+      - [ ] 네이버 지도 앱/웹 연동
+      - [ ] URL: `https://map.naver.com/v5/directions/{좌표}`
+    - [ ] 좌표 정보 표시 (선택 사항)
+- [ ] 공유 기능 (MVP 2.4.5)
+  - [ ] `components/tour-detail/share-button.tsx` 생성
+    - [ ] URL 복사 기능
+      - [ ] `navigator.clipboard.writeText()` 사용
+      - [ ] HTTPS 환경 확인
+    - [ ] 복사 완료 토스트 메시지
+    - [ ] 공유 아이콘 버튼 (Share/Link 아이콘)
+  - [ ] Open Graph 메타태그
+    - [ ] `app/places/[contentId]/page.tsx`에 Metadata 생성
+    - [ ] `og:title` - 관광지명
+    - [ ] `og:description` - 관광지 설명 (100자 이내)
+    - [ ] `og:image` - 대표 이미지 (1200x630 권장)
+    - [ ] `og:url` - 상세페이지 URL
+    - [ ] `og:type` - "website"
+- [ ] 북마크 기능 (MVP 2.4.5)
+  - [ ] `components/bookmarks/bookmark-button.tsx` 생성
+    - [ ] 별 아이콘 (채워짐/비어있음)
+    - [ ] 북마크 상태 확인 (Supabase 조회)
+    - [ ] 북마크 추가/제거 기능
+    - [ ] 인증된 사용자 확인 (Clerk)
+    - [ ] 로그인하지 않은 경우: 로그인 유도 또는 localStorage 임시 저장
+  - [ ] Supabase 연동
+    - [ ] `lib/api/supabase-api.ts` 생성
+      - [ ] `getBookmark()` - 북마크 조회
+      - [ ] `addBookmark()` - 북마크 추가
+      - [ ] `removeBookmark()` - 북마크 제거
+      - [ ] `getUserBookmarks()` - 사용자 북마크 목록
+    - [ ] `bookmarks` 테이블 사용 (db.sql 참고)
+      - [ ] `user_id` (users 테이블 참조)
+      - [ ] `content_id` (한국관광공사 API contentid)
+      - [ ] UNIQUE 제약 (user_id, content_id)
+  - [ ] 상세페이지에 북마크 버튼 추가
+- [ ] 반려동물 정보 섹션 (MVP 2.5)
+  - [ ] `components/tour-detail/detail-pet-tour.tsx` 생성
+    - [ ] `getDetailPetTour()` API 연동
+    - [ ] 반려동물 동반 가능 여부 표시
+    - [ ] 반려동물 크기 제한 정보
+    - [ ] 반려동물 입장 가능 장소 (실내/실외)
+    - [ ] 반려동물 동반 추가 요금
+    - [ ] 반려동물 전용 시설 정보
+    - [ ] 아이콘 및 뱃지 디자인 (🐾)
+    - [ ] 주의사항 강조 표시
+- [ ] 추천 관광지 섹션 (선택 사항)
+  - [ ] 같은 지역 또는 타입의 다른 관광지 추천
+  - [ ] 카드 형태로 표시
+- [ ] 최종 통합 및 스타일링
+  - [ ] 모든 섹션 통합
+  - [ ] 반응형 디자인 확인
+  - [ ] 모바일 최적화
+  - [ ] 접근성 확인 (ARIA 라벨, 키보드 네비게이션)
+
+## Phase 4: 통계 대시보드 페이지 (`/stats`)
+
+- [ ] 페이지 기본 구조
+  - [ ] `app/stats/page.tsx` 생성
+    - [ ] 기본 레이아웃 구조
+    - [ ] 반응형 레이아웃 설정 (모바일 우선)
+    - [ ] Server Component로 구현
+- [ ] 통계 데이터 수집
+  - [ ] `lib/api/stats-api.ts` 생성
+    - [ ] `getRegionStats()` - 지역별 관광지 개수 집계
+      - [ ] `areaBasedList2` API로 각 지역별 totalCount 조회
+      - [ ] 지역 코드별로 API 호출
+    - [ ] `getTypeStats()` - 타입별 관광지 개수 집계
+      - [ ] `areaBasedList2` API로 각 타입별 totalCount 조회
+      - [ ] contentTypeId별로 API 호출
+    - [ ] `getStatsSummary()` - 전체 통계 요약
+      - [ ] 전체 관광지 수
+      - [ ] Top 3 지역
+      - [ ] Top 3 타입
+      - [ ] 마지막 업데이트 시간
+    - [ ] 병렬 API 호출로 성능 최적화
+    - [ ] 에러 처리 및 재시도 로직
+    - [ ] 데이터 캐싱 (revalidate: 3600)
+- [ ] 통계 요약 카드
+  - [ ] `components/stats/stats-summary.tsx` 생성
+    - [ ] 전체 관광지 수 표시
+    - [ ] Top 3 지역 표시 (카드 형태)
+    - [ ] Top 3 타입 표시 (카드 형태)
+    - [ ] 마지막 업데이트 시간 표시
+    - [ ] 로딩 상태 (Skeleton UI)
+    - [ ] 카드 레이아웃 디자인
+- [ ] 지역별 분포 차트 (Bar Chart)
+  - [ ] `components/stats/region-chart.tsx` 생성
+    - [ ] shadcn/ui Chart 컴포넌트 설치 (Bar)
+    - [ ] recharts 기반 Bar Chart 구현
+    - [ ] X축: 지역명 (서울, 부산, 제주 등)
+    - [ ] Y축: 관광지 개수
+    - [ ] 상위 10개 지역 표시 (또는 전체)
+    - [ ] 바 클릭 시 해당 지역 목록 페이지로 이동
+    - [ ] 호버 시 정확한 개수 표시
+    - [ ] 다크/라이트 모드 지원
+    - [ ] 반응형 디자인
+    - [ ] 로딩 상태
+    - [ ] 접근성 (ARIA 라벨, 키보드 네비게이션)
+- [ ] 타입별 분포 차트 (Donut Chart)
+  - [ ] `components/stats/type-chart.tsx` 생성
+    - [ ] shadcn/ui Chart 컴포넌트 설치 (Pie/Donut)
+    - [ ] recharts 기반 Donut Chart 구현
+    - [ ] 타입별 비율 (백분율)
+    - [ ] 타입별 개수 표시
+    - [ ] 섹션 클릭 시 해당 타입 목록 페이지로 이동
+    - [ ] 호버 시 타입명, 개수, 비율 표시
+    - [ ] 다크/라이트 모드 지원
+    - [ ] 반응형 디자인
+    - [ ] 로딩 상태
+    - [ ] 접근성 (ARIA 라벨)
+- [ ] 페이지 통합
+  - [ ] `app/stats/page.tsx`에 모든 컴포넌트 통합
+    - [ ] 통계 요약 카드 (상단)
+    - [ ] 지역별 분포 차트 (중단)
+    - [ ] 타입별 분포 차트 (하단)
+  - [ ] 에러 처리 (에러 메시지 + 재시도 버튼)
+  - [ ] 네비게이션에 통계 페이지 링크 추가
+  - [ ] 최종 페이지 확인
+
+## Phase 5: 북마크 페이지 (`/bookmarks`) - 선택 사항
+
+- [ ] Supabase 설정 확인
+  - [ ] `bookmarks` 테이블 확인 (db.sql 참고)
+    - [ ] `users` 테이블과의 관계 확인
+    - [ ] 인덱스 확인 (user_id, content_id, created_at)
+    - [ ] RLS 비활성화 확인 (개발 환경)
+- [ ] 북마크 목록 페이지
+  - [ ] `app/bookmarks/page.tsx` 생성
+    - [ ] 인증된 사용자만 접근 가능
+    - [ ] 로그인하지 않은 경우 로그인 유도
+  - [ ] `components/bookmarks/bookmark-list.tsx` 생성
+    - [ ] 사용자 북마크 목록 조회 (`getUserBookmarks()`)
+    - [ ] 카드 레이아웃 (홈페이지와 동일한 tour-card 사용)
+    - [ ] 빈 상태 처리 (북마크 없을 때)
+    - [ ] 로딩 상태 (Skeleton UI)
+- [ ] 북마크 관리 기능
+  - [ ] 정렬 옵션
+    - [ ] 최신순 (created_at DESC)
+    - [ ] 이름순 (가나다순)
+    - [ ] 지역별
+  - [ ] 일괄 삭제 기능
+    - [ ] 체크박스 선택
+    - [ ] 선택 항목 삭제
+    - [ ] 확인 다이얼로그
+  - [ ] 개별 삭제 기능
+    - [ ] 각 카드에 삭제 버튼
+- [ ] 페이지 통합 및 스타일링
+  - [ ] 반응형 디자인 확인
+  - [ ] 최종 페이지 확인
+
+## Phase 6: 최적화 & 배포
+
+- [ ] 이미지 최적화
+  - [ ] `next.config.ts` 외부 도메인 설정
+    - [ ] 한국관광공사 이미지 도메인 추가
+    - [ ] 네이버 지도 이미지 도메인 추가
+  - [ ] Next.js Image 컴포넌트 사용 확인
+    - [ ] priority 속성 (above-the-fold)
+    - [ ] lazy loading (below-the-fold)
+    - [ ] responsive sizes 설정
+- [ ] 전역 에러 핸들링
+  - [ ] `app/error.tsx` 생성
+  - [ ] `app/global-error.tsx` 생성
+  - [ ] API 에러 처리 개선
+- [ ] 404 페이지
+  - [ ] `app/not-found.tsx` 생성
+    - [ ] 사용자 친화적인 메시지
+    - [ ] 홈으로 돌아가기 버튼
+- [ ] SEO 최적화
+  - [ ] 메타태그 설정 (`app/layout.tsx`)
+    - [ ] 기본 title, description
+    - [ ] Open Graph 태그
+    - [ ] Twitter Card 태그
+  - [ ] `app/sitemap.ts` 생성
+    - [ ] 동적 sitemap 생성 (관광지 상세페이지 포함)
+  - [ ] `app/robots.ts` 생성
+- [ ] 성능 최적화
+  - [ ] Lighthouse 점수 측정 (목표: > 80)
+  - [ ] 코드 분할 확인
+  - [ ] 불필요한 번들 제거
+  - [ ] API 응답 캐싱 전략 확인
+- [ ] 환경변수 보안 검증
+  - [ ] 모든 필수 환경변수 확인
+  - [ ] `.env.example` 업데이트
+  - [ ] 프로덕션 환경변수 설정 가이드 작성
+- [ ] 배포 준비
+  - [ ] Vercel 배포 설정
+  - [ ] 환경변수 설정 (Vercel 대시보드)
+  - [ ] 빌드 테스트 (`pnpm build`)
+  - [ ] 프로덕션 배포 및 테스트
+
+## 추가 작업 (선택 사항)
+
+- [ ] 다크 모드 지원
+  - [ ] 테마 전환 기능
+  - [ ] 모든 컴포넌트 다크 모드 스타일 적용
+- [ ] PWA 지원
+  - [ ] `app/manifest.ts` 생성
+  - [ ] Service Worker 설정
+  - [ ] 오프라인 지원
+- [ ] 접근성 개선
+  - [ ] ARIA 라벨 추가
+  - [ ] 키보드 네비게이션 개선
+  - [ ] 색상 대비 확인 (WCAG AA)
+- [ ] 성능 모니터링
+  - [ ] Web Vitals 측정
+  - [ ] 에러 로깅 (Sentry 등)
+- [ ] 사용자 피드백
+  - [ ] 피드백 수집 기능
+  - [ ] 버그 리포트 기능
