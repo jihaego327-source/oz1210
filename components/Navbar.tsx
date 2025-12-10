@@ -4,9 +4,8 @@ import { SignedOut, SignInButton, SignedIn, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import TourSearch from "@/components/tour-search";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -43,18 +42,7 @@ const Navbar = () => {
         </nav>
 
         {/* 검색창 */}
-        <div className="flex-1 max-w-md mx-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="관광지 검색..."
-              className="pl-10 w-full min-w-[300px] md:min-w-[500px]"
-              disabled
-              aria-label="관광지 검색"
-            />
-          </div>
-        </div>
+        <TourSearch />
 
         {/* 로그인 버튼 */}
         <div className="flex items-center gap-4 flex-shrink-0">

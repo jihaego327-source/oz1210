@@ -41,6 +41,8 @@ export interface TourFilters {
   sortBy: SortBy;
   /** 페이지 번호 */
   pageNo: number;
+  /** 검색 키워드 */
+  keyword?: string;
 }
 
 /**
@@ -59,6 +61,8 @@ export interface FilterQueryParams {
   sortBy?: string | string[];
   /** 페이지 번호 */
   pageNo?: string | string[];
+  /** 검색 키워드 */
+  keyword?: string | string[];
 }
 
 /**
@@ -71,6 +75,7 @@ export const DEFAULT_FILTERS: TourFilters = {
   petSizes: [],
   sortBy: 'modifiedtime', // 최신순 (기본값)
   pageNo: 1,
+  keyword: undefined,
 } as const;
 
 /**
@@ -83,6 +88,7 @@ export const DEFAULT_FILTERS_ALL: TourFilters = {
   petSizes: [],
   sortBy: 'modifiedtime',
   pageNo: 1,
+  keyword: undefined,
 } as const;
 
 /**

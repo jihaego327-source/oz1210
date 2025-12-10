@@ -39,6 +39,10 @@ interface TourListProps {
   onRetry?: () => void;
   /** 추가 스타일 클래스 */
   className?: string;
+  /** 검색 모드 여부 */
+  isSearchMode?: boolean;
+  /** 검색 키워드 */
+  keyword?: string;
 }
 
 /**
@@ -60,6 +64,8 @@ export default function TourList({
   error,
   onRetry,
   className,
+  isSearchMode = false,
+  keyword,
 }: TourListProps) {
   // 에러 상태 처리
   if (error) {
@@ -120,10 +126,14 @@ export default function TourList({
         )}
       >
         <p className="text-lg font-medium text-foreground mb-2">
-          관광지가 없습니다
+          {isSearchMode && keyword
+            ? `"${keyword}" 검색 결과가 없습니다`
+            : '관광지가 없습니다'}
         </p>
         <p className="text-sm text-muted-foreground">
-          다른 지역이나 타입을 선택해보세요.
+          {isSearchMode && keyword
+            ? '다른 키워드로 검색하거나 필터를 변경해보세요.'
+            : '다른 지역이나 타입을 선택해보세요.'}
         </p>
       </div>
     );

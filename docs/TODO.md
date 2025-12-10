@@ -208,21 +208,38 @@
     - [x] 지역 목록과 관광지 목록 병렬 로드 (Promise.all)
     - [x] 정렬 옵션 매핑 (modifiedtime → 'C', title → 'A')
     - [x] contentTypeIds 다중 선택 시 첫 번째만 사용 (API 제약)
-- [ ] 검색 기능 (MVP 2.3)
-  - [ ] `components/tour-search.tsx` 생성
-    - [ ] 검색창 UI (헤더 또는 메인 영역)
-    - [ ] 검색 아이콘
-    - [ ] 엔터 또는 버튼 클릭으로 검색
-    - [ ] 검색 중 로딩 스피너
-  - [ ] 검색 API 연동
-    - [ ] `searchKeyword()` 호출
-    - [ ] 검색 결과 표시
-    - [ ] 검색 결과 개수 표시
-    - [ ] 결과 없음 메시지
-  - [ ] 검색 + 필터 조합
-    - [ ] 키워드 + 지역 필터
-    - [ ] 키워드 + 타입 필터
-    - [ ] 모든 필터 동시 적용
+- [x] 검색 기능 (MVP 2.3)
+  - [x] `components/tour-search.tsx` 생성
+    - [x] 검색창 UI (헤더 또는 메인 영역)
+    - [x] 검색 아이콘
+    - [x] 엔터 또는 버튼 클릭으로 검색
+    - [x] 검색 중 로딩 스피너
+    ---
+    - [x] URL 쿼리 파라미터 `keyword`와 동기화
+    - [x] 검색 실행 시 `pageNo` 자동 리셋
+    - [x] 빈 검색어일 경우 URL에서 `keyword` 파라미터 제거
+    - [x] `useSearchParams`, `useRouter` 훅 사용
+  - [x] 검색 API 연동
+    - [x] `searchKeyword()` 호출
+    - [x] 검색 결과 표시
+    - [x] 검색 결과 개수 표시
+    - [x] 결과 없음 메시지
+    ---
+    - [x] `lib/types/filter.ts`에 검색 키워드 타입 추가 (`TourFilters`, `FilterQueryParams` 인터페이스에 `keyword` 필드 추가)
+    - [x] `app/page.tsx`에서 `keyword` 파라미터 추출 및 처리
+    - [x] 검색 모드일 때 페이지 헤더에 검색 키워드 및 결과 개수 표시
+  - [x] 검색 + 필터 조합
+    - [x] 키워드 + 지역 필터
+    - [x] 키워드 + 타입 필터
+    - [x] 모든 필터 동시 적용
+    ---
+    - [x] 검색 시 필터 파라미터(`areaCode`, `contentTypeId`) 전달
+    - [x] 검색 결과에도 반려동물 필터 적용
+    - [x] 정렬 옵션 적용 (`arrange` 파라미터)
+    - [x] 페이지네이션 처리
+  - [x] Navbar 검색창 통합
+    - [x] `components/Navbar.tsx`에서 `TourSearch` 컴포넌트로 교체
+    - [x] `disabled` 속성 제거
 - [ ] 네이버 지도 연동 (MVP 2.2)
   - [ ] `components/naver-map.tsx` 생성
     - [ ] Naver Maps API v3 초기화

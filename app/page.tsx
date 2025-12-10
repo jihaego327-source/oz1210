@@ -7,7 +7,7 @@
  * 주요 기능 (Phase 2에서 단계별 구현):
  * 1. 관광지 목록 표시 (Phase 2.2) ✅
  * 2. 지역/타입 필터 (Phase 2.3) ✅
- * 3. 키워드 검색 (Phase 2.4)
+ * 3. 키워드 검색 (Phase 2.4) ✅
  * 4. 네이버 지도 연동 (Phase 2.5)
  * 5. 페이지네이션 (Phase 2.6)
  *
@@ -15,7 +15,8 @@
  * - 기본 레이아웃 구조 (헤더, 메인, 푸터)
  * - 관광지 목록 표시 (필터 적용)
  * - 필터 기능 (지역, 타입, 정렬)
- * - API 연동 (getAreaBasedList, getAreaCode)
+ * - 키워드 검색 기능
+ * - API 연동 (getAreaBasedList, getAreaCode, searchKeyword)
  *
  * @dependencies
  * - Next.js App Router (Server Component)
@@ -26,7 +27,12 @@
  * - Tailwind CSS v4
  */
 
-import { getAreaBasedList, getAreaCode, getDetailPetTour } from '@/lib/api/tour-api';
+import {
+  getAreaBasedList,
+  getAreaCode,
+  getDetailPetTour,
+  searchKeyword,
+} from '@/lib/api/tour-api';
 import TourList from '@/components/tour-list';
 import TourFilters from '@/components/tour-filters';
 import { DEFAULT_FILTERS, SORT_ARRANGE_MAP } from '@/lib/types/filter';
@@ -81,6 +87,12 @@ export default async function Home({ searchParams }: HomeProps) {
         .filter((size): size is PetSize => ['small', 'medium', 'large'].includes(size))
     : DEFAULT_FILTERS.petSizes ?? [];
 
+  const keyword = params.keyword
+    ? Array.isArray(params.keyword)
+      ? params.keyword[0].trim()
+      : params.keyword.trim()
+    : undefined;
+
   const shouldApplyPetFilter = petAllowed || petSizes.length > 0;
 
   // API 호출을 위한 파라미터 설정
@@ -92,14 +104,26 @@ export default async function Home({ searchParams }: HomeProps) {
   let areaCodes: Awaited<ReturnType<typeof getAreaCode>> = [];
   let tourData = null;
   let error: Error | null = null;
+  let isSearchMode = false;
 
   try {
     // 지역 목록 가져오기
     areaCodes = await getAreaCode().catch(() => []);
 
-    // 관광지 목록 가져오기
-    // areaCode가 undefined인지 명시적으로 확인
-    if (areaCode !== undefined) {
+    // 키워드 검색 모드인지 확인
+    if (keyword && keyword.length > 0) {
+      // 검색 모드: searchKeyword API 호출
+      isSearchMode = true;
+      tourData = await searchKeyword({
+        keyword,
+        areaCode: areaCode,
+        contentTypeId: contentTypeId,
+        numOfRows: 20,
+        pageNo,
+        arrange,
+      });
+    } else if (areaCode !== undefined) {
+      // 일반 모드: 지역 기반 목록 조회 (특정 지역 선택)
       // 특정 지역 선택 시 - 단일 API 호출
       tourData = await getAreaBasedList({
         areaCode,
@@ -109,7 +133,7 @@ export default async function Home({ searchParams }: HomeProps) {
         arrange,
       });
     } else {
-      // "전체" 선택 시 - 모든 지역 조회 후 병합
+      // 일반 모드: "전체" 선택 시 - 모든 지역 조회 후 병합
       if (areaCodes.length === 0) {
         // 지역 목록을 가져오지 못한 경우 기본값 사용
         tourData = await getAreaBasedList({
@@ -250,9 +274,13 @@ export default async function Home({ searchParams }: HomeProps) {
       <div className="space-y-6">
         {/* 페이지 헤더 */}
         <div>
-          <h1 className="text-3xl font-bold mb-4">관광지 목록</h1>
+          <h1 className="text-3xl font-bold mb-4">
+            {isSearchMode && keyword ? `"${keyword}" 검색 결과` : '관광지 목록'}
+          </h1>
           <p className="text-muted-foreground">
-            전국의 관광지를 검색하고 탐험해보세요.
+            {isSearchMode && keyword
+              ? `검색 결과 ${tourData?.pagination.totalCount || 0}개`
+              : '전국의 관광지를 검색하고 탐험해보세요.'}
           </p>
         </div>
 
@@ -264,6 +292,8 @@ export default async function Home({ searchParams }: HomeProps) {
           items={tourData?.items || []}
           isLoading={false}
           error={error}
+          isSearchMode={isSearchMode}
+          keyword={keyword}
         />
       </div>
     </div>
