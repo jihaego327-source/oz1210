@@ -136,9 +136,14 @@
 ## Phase 2: 홈페이지 (`/`) - 관광지 목록
 
 - [ ] 페이지 기본 구조
-  - [ ] `app/page.tsx` 생성
-    - [ ] 기본 레이아웃 (헤더, 메인, 푸터)
-    - [ ] 반응형 컨테이너 설정
+  - [x] `app/page.tsx` 생성
+    - [x] 기본 레이아웃 (헤더, 메인, 푸터)
+    - [x] 반응형 컨테이너 설정
+    ---
+    - [x] `components/Footer.tsx` 생성 - 간단한 푸터 레이아웃 (저작권, API 출처, 반응형)
+    - [x] `app/layout.tsx`에 Footer 컴포넌트 추가 (Navbar → children → Footer 구조)
+    - [x] `app/page.tsx`를 My Trip 홈페이지 기본 구조로 변경 (템플릿 내용 제거, 반응형 컨테이너 설정)
+    - [x] 반응형 디자인 확인 (모바일/태블릿/데스크톱) 및 globals.css main 스타일 검토
 - [ ] 관광지 목록 기능 (MVP 2.1)
   - [ ] `components/tour-card.tsx` 생성
     - [ ] 썸네일 이미지 (기본 이미지 fallback)
