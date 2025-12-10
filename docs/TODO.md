@@ -114,11 +114,24 @@
     - [x] 현재 페이지 하이라이트 처리
     - [x] 모바일 네비게이션 추가
     - [x] 로그인 버튼 유지
-- [ ] 공통 컴포넌트
-  - [ ] `components/ui/loading.tsx` - 로딩 스피너
-  - [ ] `components/ui/skeleton.tsx` - 스켈레톤 UI
-  - [ ] `components/ui/error.tsx` - 에러 메시지
-  - [ ] `components/ui/toast.tsx` - 토스트 알림 (shadcn/ui)
+- [x] 공통 컴포넌트
+  - [x] `components/ui/loading.tsx` 생성
+    - [x] Loader2 아이콘 사용 (lucide-react)
+    - [x] 크기 변형 지원 (sm, md, lg)
+    - [x] 텍스트 옵션
+    - [x] 전체 화면 오버레이 옵션
+    - [x] JSDoc 주석 추가
+  - [x] `components/ui/skeleton.tsx` 설치
+    - [x] shadcn/ui skeleton 컴포넌트 설치
+  - [x] `components/ui/error.tsx` 생성
+    - [x] 에러 타입별 메시지 표시 (api, network, unknown)
+    - [x] 재시도 버튼 옵션
+    - [x] 네트워크/API 에러 구분
+    - [x] AlertCircle, WifiOff 아이콘 사용
+    - [x] JSDoc 주석 추가
+  - [x] `components/ui/sonner.tsx` 설치
+    - [x] shadcn/ui sonner 컴포넌트 설치
+    - [x] app/layout.tsx에 Toaster 추가
 
 ## Phase 2: 홈페이지 (`/`) - 관광지 목록
 
