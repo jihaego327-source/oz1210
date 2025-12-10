@@ -61,6 +61,16 @@ export interface TourItem {
   overview?: string;
   /** 시군구코드 */
   sigungucode?: string;
+  /** 반려동물 동반 가능 여부 (일부 응답에 포함될 수 있음) */
+  chkpet?: string;
+  /** 반려동물 크기 제한 */
+  chkpetsize?: string;
+  /** 반려동물 입장 가능 장소 */
+  chkpetplace?: string;
+  /** 반려동물 추가 요금 */
+  chkpetfee?: string;
+  /** 기타 반려동물 정보 */
+  petinfo?: string;
 }
 
 /**

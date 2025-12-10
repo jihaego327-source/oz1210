@@ -176,25 +176,38 @@
     - [x] TourList 컴포넌트에 데이터 전달
     - [x] try-catch로 에러 처리
 - [ ] 필터 기능
-  - [ ] `components/tour-filters.tsx` 생성
-    - [ ] 지역 필터 (시/도 선택)
-      - [ ] `getAreaCode()` API로 지역 목록 로드
-      - [ ] 드롭다운 또는 버튼 그룹
-      - [ ] "전체" 옵션
-    - [ ] 관광 타입 필터
-      - [ ] 관광지(12), 문화시설(14), 축제/행사(15), 여행코스(25), 레포츠(28), 숙박(32), 쇼핑(38), 음식점(39)
-      - [ ] 다중 선택 가능
-      - [ ] "전체" 옵션
-    - [ ] 반려동물 동반 가능 필터 (MVP 2.5)
-      - [ ] 토글 버튼
-      - [ ] 크기별 필터 (소형, 중형, 대형)
-    - [ ] 정렬 옵션
-      - [ ] 최신순 (modifiedtime)
-      - [ ] 이름순 (가나다)
-    - [ ] 필터 상태 관리 (URL 쿼리 파라미터 또는 상태)
-  - [ ] 필터 적용 로직
-    - [ ] 필터 변경 시 API 재호출
-    - [ ] 필터 조합 처리
+  - [x] `components/tour-filters.tsx` 생성
+    - [x] 지역 필터 (시/도 선택)
+      - [x] `getAreaCode()` API로 지역 목록 로드
+      - [x] Select 드롭다운 사용
+      - [x] "전체" 옵션
+    - [x] 관광 타입 필터
+      - [x] 관광지(12), 문화시설(14), 축제/행사(15), 여행코스(25), 레포츠(28), 숙박(32), 쇼핑(38), 음식점(39)
+      - [x] 다중 선택 가능 (Checkbox)
+      - [x] "전체" 옵션
+    - [x] 반려동물 동반 가능 필터 (MVP 2.5)
+      - [x] 토글 버튼
+      - [x] 크기별 필터 (소형, 중형, 대형)
+    - [x] 정렬 옵션
+      - [x] 최신순 (modifiedtime)
+      - [x] 이름순 (가나다)
+    - [x] 필터 상태 관리 (URL 쿼리 파라미터)
+    ---
+    - [x] `lib/types/filter.ts` 생성 (필터 타입 정의)
+    - [x] shadcn/ui Select 컴포넌트 설치
+    - [x] shadcn/ui Checkbox 컴포넌트 설치
+    - [x] URL 쿼리 파라미터 기반 상태 관리 (useSearchParams, useRouter)
+    - [x] 필터 변경 시 URL 업데이트 및 페이지 리셋
+  - [x] 필터 적용 로직
+    - [x] 필터 변경 시 API 재호출
+    - [x] 필터 조합 처리
+    ---
+    - [x] `app/page.tsx` 수정 (searchParams 처리)
+    - [x] Next.js 15 패턴 적용 (await searchParams)
+    - [x] 필터 값 추출 및 기본값 처리
+    - [x] 지역 목록과 관광지 목록 병렬 로드 (Promise.all)
+    - [x] 정렬 옵션 매핑 (modifiedtime → 'C', title → 'A')
+    - [x] contentTypeIds 다중 선택 시 첫 번째만 사용 (API 제약)
 - [ ] 검색 기능 (MVP 2.3)
   - [ ] `components/tour-search.tsx` 생성
     - [ ] 검색창 UI (헤더 또는 메인 영역)
