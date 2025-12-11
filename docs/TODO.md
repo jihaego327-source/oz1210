@@ -423,14 +423,25 @@
   - [x] 아이콘 통합 - lucide-react 아이콘 사용 (Clock, Calendar, Info, Car, Users, BookOpen, Baby, Dog)
   - [x] 스타일링 - detail-info와 일관된 디자인 (Card 컴포넌트, 아이콘 + 텍스트 구조)
   - [x] 여러 줄 텍스트 지원 - whitespace-pre-line 사용 (운영시간, 휴무일, 체험 프로그램 등)
-- [ ] 이미지 갤러리 (MVP 2.4.3)
-  - [ ] `components/tour-detail/detail-gallery.tsx` 생성
-    - [ ] `getDetailImage()` API 연동
-    - [ ] 대표 이미지 + 서브 이미지들
-    - [ ] 이미지 슬라이드 기능 (Swiper 또는 캐러셀)
-    - [ ] 이미지 클릭 시 전체화면 모달
-    - [ ] 이미지 없으면 기본 이미지
-    - [ ] Next.js Image 컴포넌트 사용 (최적화)
+- [x] 이미지 갤러리 (MVP 2.4.3)
+  - [x] `components/tour-detail/detail-gallery.tsx` 생성
+    - [x] `getDetailImage()` API 연동
+    - [x] 대표 이미지 + 서브 이미지들
+    - [x] 이미지 슬라이드 기능 (Swiper 또는 캐러셀)
+    - [x] 이미지 클릭 시 전체화면 모달
+    - [x] 이미지 없으면 기본 이미지
+    - [x] Next.js Image 컴포넌트 사용 (최적화)
+  ---
+  추가 개발 사항
+  - [x] Swiper 라이브러리 설치 및 설정
+  - [x] Client Component로 구현 (Swiper 인터랙션을 위해)
+  - [x] 이미지 목록 조회 (getDetailImage API, 최대 20개)
+  - [x] Swiper 슬라이드 구현 (네비게이션, 페이지네이션, 반응형)
+  - [x] 전체화면 모달 구현 (Dialog 컴포넌트, 모달 내 Swiper)
+  - [x] 이미지 최적화 (Next.js Image, unoptimized 속성 처리)
+  - [x] 에러 처리 및 빈 상태 처리 (이미지 없을 때 섹션 숨김)
+  - [x] `app/places/[contentId]/page.tsx` 통합
+  - [x] JSDoc 주석 추가 (컴포넌트, 함수, Swiper 설정 설명)
 - [ ] 지도 섹션 (MVP 2.4.4)
   - [ ] `components/tour-detail/detail-map.tsx` 생성
     - [ ] 해당 관광지 위치 표시

@@ -446,3 +446,470 @@ export default async function PlaceDetailPage({ params }: PageProps) {
 - 에러 발생 시 사용자 친화적 메시지 및 복구 경로 제공
 - Phase 3에서 확장 가능한 구조로 설계
 - **문제 해결 완료!** 🎉
+
+---
+
+# 상세페이지 홈페이지 링크 404 오류 및 전화번호 미표시 문제 해결 과정 (Troubleshooting Report)
+
+## 📌 1. 문제 상황 (Problem)
+
+**증상:**
+- 상세페이지에서 홈페이지 링크를 클릭하면 404 오류 발생
+- 전화번호가 표시되지 않음 (빈 공간만 보임)
+
+**환경:**
+- **Framework:** Next.js 15 (App Router)
+- **문제 파일:** `components/tour-detail/detail-info.tsx`
+- **관련 API:** 한국관광공사 API (`getDetailCommon`)
+
+---
+
+## 🔍 2. 원인 분석 (Root Cause Analysis)
+
+### 문제 1: 홈페이지 URL 형식 불일치 🚨
+
+**원인:**
+- 한국관광공사 API의 `homepage` 필드는 다양한 형식으로 제공됨
+  - 프로토콜이 없는 URL: `"www.example.com"` (프로토콜 없음)
+  - 상대 경로: `"/path/to/page"` (상대 경로)
+  - 빈 문자열: `""` (빈 값)
+- 브라우저는 프로토콜이 없는 URL을 상대 경로로 해석하여 404 오류 발생
+- 예: `www.example.com` → 브라우저가 현재 도메인 기준으로 해석 → `localhost:3000/www.example.com` → 404 오류
+
+### 문제 2: 전화번호 빈 값 처리 누락 🚨
+
+**원인:**
+- API 응답의 `tel` 필드가 빈 문자열(`""`)이거나 공백(`" "`)일 수 있음
+- JavaScript에서 빈 문자열은 `falsy`이지만, 조건문에서 `if (detail.tel)`로 체크할 때 공백만 있는 경우는 `truthy`로 판단됨
+- 하지만 실제로는 공백만 있어서 화면에 아무것도 표시되지 않음
+
+---
+
+## ✅ 3. 해결 방법 (Solution)
+
+### 해결 전략: URL 및 전화번호 정규화 함수 구현
+
+데이터를 표시하기 전에 정규화하여 유효한 값만 표시하도록 했습니다.
+
+### 1단계: 홈페이지 URL 정규화 함수 구현
+
+**파일:** `components/tour-detail/detail-info.tsx`
+
+**구현 내용:**
+```typescript
+const normalizeHomepageUrl = (url: string | undefined): string | null => {
+  if (!url || url.trim() === '') return null;
+  
+  const trimmedUrl = url.trim();
+  
+  // 이미 http:// 또는 https://로 시작하는 경우
+  if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    return trimmedUrl;
+  }
+  
+  // 상대 경로인 경우 (예: /path/to/page) null 반환
+  if (trimmedUrl.startsWith('/')) {
+    return null;
+  }
+  
+  // 프로토콜이 없는 경우 https:// 추가
+  return `https://${trimmedUrl}`;
+};
+```
+
+**주요 기능:**
+- 빈 문자열 또는 공백만 있는 경우 `null` 반환 (표시하지 않음)
+- 상대 경로인 경우 `null` 반환 (표시하지 않음)
+- 프로토콜이 없는 경우 `https://` 자동 추가
+- 이미 올바른 형식인 경우 그대로 반환
+
+### 2단계: 전화번호 정규화 함수 구현
+
+**파일:** `components/tour-detail/detail-info.tsx`
+
+**구현 내용:**
+```typescript
+const normalizeTel = (tel: string | undefined): string | null => {
+  if (!tel || tel.trim() === '') return null;
+  return tel.trim();
+};
+```
+
+**주요 기능:**
+- 빈 문자열 또는 공백만 있는 경우 `null` 반환 (표시하지 않음)
+- 유효한 전화번호인 경우 앞뒤 공백 제거 후 반환
+
+### 3단계: 컴포넌트 로직 수정
+
+**변경 전:**
+```typescript
+{detail.homepage && (
+  <a href={detail.homepage}>...</a>
+)}
+{detail.tel && (
+  <a href={`tel:${detail.tel}`}>...</a>
+)}
+```
+
+**변경 후:**
+```typescript
+const normalizedHomepage = normalizeHomepageUrl(detail.homepage);
+const normalizedTel = normalizeTel(detail.tel);
+
+{normalizedHomepage && (
+  <a href={normalizedHomepage}>...</a>
+)}
+{normalizedTel && (
+  <a href={`tel:${normalizedTel}`}>...</a>
+)}
+```
+
+---
+
+## 💡 4. 배운 점 (Key Takeaways)
+
+1. **API 데이터의 불일치성:**
+   - 공공 API는 데이터 형식이 일관되지 않을 수 있음
+   - 프로토콜이 없는 URL, 상대 경로, 빈 값 등 다양한 형식 처리 필요
+   - 데이터를 표시하기 전에 정규화하는 것이 중요
+
+2. **빈 값 처리의 중요성:**
+   - JavaScript에서 빈 문자열(`""`)과 공백(`" "`)은 다르게 동작함
+   - `trim()` 메서드를 사용하여 공백 제거 후 검증 필요
+   - 조건부 렌더링 전에 데이터 정규화 필수
+
+3. **URL 처리의 주의사항:**
+   - 브라우저는 프로토콜이 없는 URL을 상대 경로로 해석함
+   - 외부 URL은 반드시 프로토콜(`http://` 또는 `https://`) 포함 필요
+   - 상대 경로와 절대 경로를 구분하여 처리해야 함
+
+---
+
+## 🚀 5. 최종 결과
+
+- 홈페이지 링크 클릭 시 404 오류 해결
+- 프로토콜이 없는 URL에 `https://` 자동 추가
+- 상대 경로 및 유효하지 않은 URL은 표시하지 않음
+- 전화번호 빈 값 및 공백 처리로 미표시 문제 해결
+- 정규화 함수로 데이터 일관성 확보
+- **문제 해결 완료!** 🎉
+
+---
+
+# 상세페이지 홈페이지 링크 about:blank#blocked 오류 해결 과정 (Troubleshooting Report)
+
+## 📌 1. 문제 상황 (Problem)
+
+**증상:**
+- 상세페이지에서 홈페이지 링크를 클릭하면 브라우저 주소창에 `about:blank#blocked`가 표시됨
+- 페이지가 전혀 표시되지 않음 (빈 화면)
+- 브라우저가 링크를 차단함
+
+**환경:**
+- **Framework:** Next.js 15 (App Router)
+- **문제 파일:** `components/tour-detail/detail-info.tsx`
+- **브라우저:** Chrome, Edge 등 (보안 정책에 의해 차단)
+
+---
+
+## 🔍 2. 원인 분석 (Root Cause Analysis)
+
+### 최종 원인: 유효하지 않은 URL 형식 🚨
+
+**문제 코드:**
+```typescript
+// 이전 구현
+const normalizeHomepageUrl = (url: string | undefined): string | null => {
+  if (!url || url.trim() === '') return null;
+  
+  const trimmedUrl = url.trim();
+  
+  // 프로토콜이 없는 경우 https:// 추가
+  if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+    return `https://${trimmedUrl}`;  // ❌ 유효성 검증 없이 추가
+  }
+  
+  return trimmedUrl;
+};
+```
+
+**원인:**
+1. 프로토콜이 없는 URL에 `https://`를 추가했지만, URL 자체가 유효하지 않은 경우가 있음
+   - 예: `"invalid url!!!"` → `"https://invalid url!!!"` (유효하지 않은 URL)
+   - 예: `"http://invalid url"` (공백 포함)
+2. 브라우저는 유효하지 않은 URL을 차단하여 `about:blank#blocked`로 리다이렉트
+3. `new URL()` 생성자로 유효성 검증을 하지 않아서 잘못된 URL이 그대로 사용됨
+
+**추가 발견 사항:**
+- 이미 프로토콜이 있는 URL도 유효성 검증이 필요함
+- `http://invalid url` 같은 공백이 포함된 URL도 유효하지 않음
+
+---
+
+## ✅ 3. 해결 방법 (Solution)
+
+### 해결 전략: URL 유효성 검증 추가
+
+`new URL()` 생성자를 사용하여 URL 유효성을 검증하고, 유효하지 않은 URL은 표시하지 않도록 했습니다.
+
+### 코드 수정: `normalizeHomepageUrl` 함수 개선
+
+**파일:** `components/tour-detail/detail-info.tsx`
+
+**변경 전:**
+```typescript
+const normalizeHomepageUrl = (url: string | undefined): string | null => {
+  if (!url || url.trim() === '') return null;
+  
+  const trimmedUrl = url.trim();
+  
+  // 프로토콜이 없는 경우 https:// 추가
+  if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+    return `https://${trimmedUrl}`;  // ❌ 유효성 검증 없음
+  }
+  
+  return trimmedUrl;
+};
+```
+
+**변경 후:**
+```typescript
+const normalizeHomepageUrl = (url: string | undefined): string | null => {
+  if (!url || url.trim() === '') return null;
+  
+  const trimmedUrl = url.trim();
+  
+  // 이미 http:// 또는 https://로 시작하는 경우
+  if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+    try {
+      // URL 유효성 검증
+      new URL(trimmedUrl);
+      return trimmedUrl;
+    } catch {
+      // 유효하지 않은 URL이면 null 반환
+      return null;
+    }
+  }
+  
+  // 상대 경로인 경우 (예: /path/to/page) null 반환
+  if (trimmedUrl.startsWith('/')) {
+    return null;
+  }
+  
+  // 프로토콜이 없는 경우 https:// 추가
+  const normalizedUrl = `https://${trimmedUrl}`;
+  
+  try {
+    // URL 유효성 검증
+    new URL(normalizedUrl);
+    return normalizedUrl;
+  } catch {
+    // 유효하지 않은 URL이면 null 반환
+    return null;
+  }
+};
+```
+
+**주요 변경 사항:**
+- 프로토콜이 있는 URL도 `new URL()`로 유효성 검증
+- 프로토콜을 추가한 후에도 `new URL()`로 유효성 검증
+- 유효하지 않은 URL은 `null` 반환하여 표시하지 않음
+- `try-catch`로 에러 처리하여 안전하게 처리
+
+---
+
+## 💡 4. 배운 점 (Key Takeaways)
+
+1. **URL 유효성 검증의 중요성:**
+   - 프로토콜만 추가하는 것으로는 충분하지 않음
+   - `new URL()` 생성자를 사용하여 URL 형식 검증 필요
+   - 유효하지 않은 URL은 브라우저가 차단하여 사용자 경험 저하
+
+2. **브라우저 보안 정책:**
+   - 브라우저는 유효하지 않은 URL을 `about:blank#blocked`로 차단
+   - 공백이 포함된 URL, 특수 문자가 잘못 사용된 URL 등은 유효하지 않음
+   - 사용자에게 오류를 보여주기보다는 유효하지 않은 링크를 표시하지 않는 것이 나음
+
+3. **에러 처리 패턴:**
+   - `new URL()`은 유효하지 않은 URL에 대해 예외를 발생시킴
+   - `try-catch`로 예외를 처리하여 안전하게 처리
+   - 유효하지 않은 경우 `null`을 반환하여 조건부 렌더링으로 숨김
+
+---
+
+## 🚀 5. 최종 결과
+
+- 홈페이지 링크 클릭 시 `about:blank#blocked` 오류 해결
+- 유효하지 않은 URL은 표시하지 않음
+- 프로토콜이 있는 URL과 없는 URL 모두 유효성 검증
+- 브라우저 보안 정책에 맞는 안전한 URL 처리
+- 사용자 경험 개선 (유효하지 않은 링크 숨김)
+- **문제 해결 완료!** 🎉
+
+---
+
+# 이미지 갤러리 모달 검은 화면 문제 해결 과정 (Troubleshooting Report)
+
+## 📌 1. 문제 상황 (Problem)
+
+**증상:**
+- 이미지 갤러리 섹션은 정상 작동 (이미지가 표시됨)
+- 이미지를 클릭하면 모달이 열림
+- 모달 내부가 검은 화면으로만 표시됨 (이미지가 보이지 않음)
+
+**환경:**
+- **Framework:** Next.js 15 (App Router)
+- **문제 파일:** `components/tour-detail/detail-gallery.tsx`
+- **라이브러리:** Swiper, shadcn/ui Dialog
+- **이미지 컴포넌트:** Next.js Image (fill 속성 사용)
+
+---
+
+## 🔍 2. 원인 분석 (Root Cause Analysis)
+
+### 최종 원인: Next.js Image의 `fill` 속성과 Swiper 높이 계산의 순환 참조 🚨
+
+**문제 코드:**
+```typescript
+// 모달 내 Swiper
+<SwiperSlide>
+  <div className="relative w-full h-full min-h-[90vh] flex items-center justify-center">
+    <Image
+      src={imageUrl}
+      alt={...}
+      fill  // ❌ 부모 컨테이너의 크기에 의존
+      className="object-contain"
+    />
+  </div>
+</SwiperSlide>
+```
+
+**원인:**
+1. **Next.js Image의 `fill` 속성 제약:**
+   - `fill` 속성은 부모 컨테이너가 `position: relative`이고 **명시적인 크기(너비와 높이)**를 가져야 작동함
+   - 부모의 크기가 0이면 이미지가 표시되지 않음
+
+2. **Swiper 높이 계산 문제:**
+   - Swiper는 슬라이드 내용에 따라 높이를 자동으로 계산함
+   - 하지만 Next.js Image의 `fill` 속성을 사용하면 이미지가 부모 크기에 의존하므로 순환 참조 발생
+   - 이미지는 부모 크기를 기다리고, 부모(Swiper)는 이미지 크기를 기다리는 상황
+
+3. **DialogContent 스타일 충돌:**
+   - DialogContent의 기본 스타일(`grid` 레이아웃)이 커스텀 스타일과 충돌
+   - `!important`를 사용해도 모든 기본 스타일을 완전히 오버라이드하지 못함
+
+4. **타이밍 문제:**
+   - 모달이 열릴 때 Swiper가 아직 높이를 계산하기 전에 이미지가 렌더링되려고 시도
+   - `h-full`은 부모의 높이를 상속받는데, 부모(Swiper)의 높이가 아직 계산되지 않았으면 0이 됨
+
+---
+
+## ✅ 3. 해결 방법 (Solution)
+
+### 해결 전략: 일반 `<img>` 태그 사용
+
+Next.js Image의 복잡한 제약을 피하고, 모달에서는 이미지 최적화가 덜 중요하므로 일반 `<img>` 태그를 사용했습니다.
+
+### 1단계: 모달 내 이미지를 일반 img 태그로 변경
+
+**파일:** `components/tour-detail/detail-gallery.tsx`
+
+**변경 전:**
+```typescript
+<SwiperSlide>
+  <div className="relative w-full h-full min-h-[90vh] flex items-center justify-center">
+    <Image
+      src={imageUrl}
+      alt={...}
+      fill
+      className="object-contain"
+      sizes="100vw"
+      unoptimized={...}
+    />
+  </div>
+</SwiperSlide>
+```
+
+**변경 후:**
+```typescript
+<SwiperSlide>
+  <div className="w-full h-full flex items-center justify-center p-4">
+    <img
+      src={imageUrl}
+      alt={...}
+      className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
+      onError={(e) => {
+        console.error('[DetailGallery] 이미지 로딩 실패:', imageUrl);
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+      }}
+    />
+  </div>
+</SwiperSlide>
+```
+
+**주요 변경 사항:**
+- Next.js Image 컴포넌트 제거
+- 일반 `<img>` 태그 사용
+- `fill` 속성 제거
+- `max-w-full max-h-[90vh]` 클래스로 반응형 크기 설정
+- `object-contain`으로 이미지 비율 유지
+- `onError` 핸들러로 이미지 로딩 실패 처리
+
+### 2단계: DialogContent 스타일 개선
+
+**변경 전:**
+```typescript
+<DialogContent className="!max-w-none !p-0 !rounded-none !bg-black/95 !fixed !inset-0 ...">
+```
+
+**변경 후:**
+```typescript
+<DialogContent className="!max-w-none !p-0 !rounded-none !bg-black/95 !fixed !inset-0 !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 !grid-none !block z-50 w-full h-full border-none [&>button]:hidden">
+```
+
+**주요 변경 사항:**
+- `!grid-none !block` 추가하여 grid 레이아웃 제거
+- 모든 위치 속성 명시적으로 오버라이드 (`!top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0`)
+
+### 3단계: Swiper 컨테이너 구조 단순화
+
+**변경 사항:**
+- SwiperSlide 내부 div에서 `relative`, `min-h-[90vh]` 제거
+- Flexbox로 중앙 정렬 (`flex items-center justify-center`)
+- `p-4` 추가하여 패딩 설정
+
+---
+
+## 💡 4. 배운 점 (Key Takeaways)
+
+1. **Next.js Image의 `fill` 속성 제약사항:**
+   - `fill` 속성은 부모가 `position: relative`이고 명시적인 크기를 가져야 함
+   - 부모의 크기가 0이면 이미지가 표시되지 않음
+   - Swiper처럼 동적으로 높이를 계산하는 컨테이너와 함께 사용하기 어려움
+
+2. **일반 img 태그 사용의 장점:**
+   - 즉시 작동, 복잡한 제약 없음
+   - 모달에서는 이미지 최적화가 덜 중요함 (이미 갤러리에서 로드됨)
+   - 반응형 크기 조정이 간단함 (`max-w-full max-h-[90vh]`)
+
+3. **DialogContent 스타일 오버라이드:**
+   - `cn()` 함수는 클래스를 병합하므로 `!important`가 필요할 수 있음
+   - `grid` 레이아웃이 남아있으면 레이아웃이 깨질 수 있음
+   - 모든 기본 스타일을 명시적으로 오버라이드해야 함
+
+4. **순환 참조 문제:**
+   - 이미지가 부모 크기에 의존하고, 부모가 이미지 크기에 의존하면 순환 참조 발생
+   - 이런 경우 일반 `<img>` 태그처럼 독립적인 크기를 가지는 요소를 사용하는 것이 해결책
+
+---
+
+## 🚀 5. 최종 결과
+
+- 이미지 클릭 시 모달이 열리고 이미지가 정상적으로 표시됨
+- 모달 내부에 이미지가 중앙에 정렬되어 표시됨
+- 이미지 크기가 화면에 맞게 조정됨 (비율 유지)
+- 이전/다음 버튼으로 이미지 이동 가능
+- 모달 닫기 정상 작동
+- 이미지 로딩 실패 시 에러 처리
+- **문제 해결 완료!** 🎉

@@ -18,7 +18,7 @@
  *   - og:url: 상세페이지 URL
  *   - og:type: "website"
  * - 운영정보 섹션 (detail-intro.tsx) ✅
- * - 이미지 갤러리 (detail-gallery.tsx)
+ * - 이미지 갤러리 (detail-gallery.tsx) ✅
  * - 지도 섹션 (detail-map.tsx)
  * - 북마크 기능 (bookmark-button.tsx)
  *
@@ -26,6 +26,7 @@
  * - lib/api/tour-api.ts (getDetailCommon, getDetailIntro)
  * - components/tour-detail/detail-info.tsx
  * - components/tour-detail/detail-intro.tsx
+ * - components/tour-detail/detail-gallery.tsx
  * - components/ui/button.tsx
  * - components/ui/card.tsx
  * - Next.js Link 컴포넌트
@@ -38,6 +39,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DetailInfo from '@/components/tour-detail/detail-info';
 import DetailIntro from '@/components/tour-detail/detail-intro';
+import DetailGallery from '@/components/tour-detail/detail-gallery';
 
 interface PageProps {
   params: Promise<{ contentId: string }>;
@@ -81,6 +83,9 @@ export default async function PlaceDetailPage({ params }: PageProps) {
           {/* 기본 정보 섹션 */}
           <DetailInfo detail={detail} />
 
+          {/* 이미지 갤러리 섹션 */}
+          <DetailGallery contentId={contentId} title={detail.title} />
+
           {/* 운영 정보 섹션 */}
           {intro && <DetailIntro intro={intro} />}
 
@@ -88,7 +93,7 @@ export default async function PlaceDetailPage({ params }: PageProps) {
           <Card className="bg-muted/50">
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">
-                💡 Phase 3 후속 작업에서 이미지 갤러리, 지도, 북마크 등 더 상세한 정보를 추가할 예정입니다.
+                💡 Phase 3 후속 작업에서 지도, 북마크 등 더 상세한 정보를 추가할 예정입니다.
               </p>
             </CardContent>
           </Card>
