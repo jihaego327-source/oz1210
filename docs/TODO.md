@@ -442,14 +442,29 @@
   - [x] 에러 처리 및 빈 상태 처리 (이미지 없을 때 섹션 숨김)
   - [x] `app/places/[contentId]/page.tsx` 통합
   - [x] JSDoc 주석 추가 (컴포넌트, 함수, Swiper 설정 설명)
-- [ ] 지도 섹션 (MVP 2.4.4)
-  - [ ] `components/tour-detail/detail-map.tsx` 생성
-    - [ ] 해당 관광지 위치 표시
-    - [ ] 마커 1개 표시
-    - [ ] "길찾기" 버튼
-      - [ ] 네이버 지도 앱/웹 연동
-      - [ ] URL: `https://map.naver.com/v5/directions/{좌표}`
-    - [ ] 좌표 정보 표시 (선택 사항)
+- [x] 지도 섹션 (MVP 2.4.4)
+  - [x] `components/tour-detail/detail-map.tsx` 생성
+    - [x] 해당 관광지 위치 표시
+    - [x] 마커 1개 표시
+    - [x] "길찾기" 버튼
+      - [x] 네이버 지도 앱/웹 연동
+      - [x] URL: `https://map.naver.com/v5/directions/{좌표}`
+    - [x] 좌표 정보 표시 (선택 사항)
+  ---
+  추가 개발 사항
+  - [x] 네이버 지도 API 초기화 구현 - window.naver?.maps 확인, 지도 인스턴스 생성, 초기 중심 좌표 설정
+  - [x] 단일 마커 표시 로직 구현 - 좌표 변환 (convertKATECToWGS84), 마커 생성, 인포윈도우 표시
+  - [x] 좌표 정보 표시 - WGS84 좌표 표시, MapPin 아이콘 사용
+  - [x] 에러 처리 추가 - 좌표 없음/유효하지 않음 처리, 네이버 지도 API 로드 실패 처리, 섹션 숨김 로직
+  - [x] `app/places/[contentId]/page.tsx` 통합 - DetailMap 컴포넌트 import 및 렌더링, 조건부 렌더링 (좌표 유효성 검증), 섹션 배치
+  - [x] 스타일링 및 UI 개선 - Card 컴포넌트로 감싸기, 반응형 디자인 (지도 높이 400px/600px), 길찾기 버튼 배치
+  - [x] 접근성 개선 - 지도 컨테이너 aria-label, 길찾기 버튼 aria-label, 키보드 네비게이션 지원
+  - [x] JSDoc 주석 추가 - 컴포넌트 설명, 함수 설명 및 사용 예시, 네이버 지도 API 사용 설명
+  ---
+  에러 사항 해결
+  - [x] 길찾기 URL 좌표 순서 수정 - 네이버 지도 v5 규격에 맞춰 경도,위도(lng,lat) 순서로 변경
+  - [x] 디버깅 로그 보강 - 마커 좌표와 길찾기 URL 좌표를 함께 로그로 출력해 검증
+  - [x] 수동 테스트 - 좌표가 있는 관광지 사례로 길찾기 실행 시 목적지 위치가 마커 위치와 일치하는지 확인
 - [ ] 공유 기능 (MVP 2.4.5)
   - [ ] `components/tour-detail/share-button.tsx` 생성
     - [ ] URL 복사 기능
