@@ -107,6 +107,12 @@ export interface TourDetail {
   areacode?: string;
   /** 시군구코드 */
   sigungucode?: string;
+  /** 대분류 */
+  cat1?: string;
+  /** 중분류 */
+  cat2?: string;
+  /** 소분류 */
+  cat3?: string;
 }
 
 /**

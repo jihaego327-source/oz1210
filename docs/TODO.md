@@ -364,19 +364,45 @@
     - [x] 이미지 sizes 속성 최적화 (모바일/태블릿/데스크톱)
     - [x] 컨테이너 최대 너비 설정 (max-w-4xl)
   - [x] 메타데이터 구조 주석 추가 (generateMetadata 함수 향후 구현 참고용)
-- [ ] 기본 정보 섹션 (MVP 2.4.1)
-  - [ ] `components/tour-detail/detail-info.tsx` 생성
-    - [ ] `getDetailCommon()` API 연동
-    - [ ] 관광지명 (대제목)
-    - [ ] 대표 이미지 (크게 표시)
-    - [ ] 주소 표시 및 복사 기능
-      - [ ] 클립보드 API 사용
-      - [ ] 복사 완료 토스트
-    - [ ] 전화번호 (클릭 시 전화 연결)
-    - [ ] 홈페이지 (링크)
-    - [ ] 개요 (긴 설명문)
-    - [ ] 관광 타입 및 카테고리 뱃지
-    - [ ] 정보 없는 항목 숨김 처리
+- [x] 기본 정보 섹션 (MVP 2.4.1)
+  - [x] `components/tour-detail/detail-info.tsx` 생성
+    - [x] `getDetailCommon()` API 연동
+    - [x] 관광지명 (대제목)
+    - [x] 대표 이미지 (크게 표시)
+    - [x] 주소 표시 및 복사 기능
+      - [x] 클립보드 API 사용
+      - [x] 복사 완료 토스트
+    - [x] 전화번호 (클릭 시 전화 연결)
+    - [x] 홈페이지 (링크)
+    - [x] 개요 (긴 설명문)
+    - [x] 관광 타입 및 카테고리 뱃지
+    - [x] 정보 없는 항목 숨김 처리
+  ---
+  추가 개발 사항
+  - [x] `app/places/[contentId]/page.tsx` 리팩토링 - DetailInfo 컴포넌트로 분리
+  - [x] 주소 복사 버튼 UI 구현 (Copy/Check 아이콘 전환)
+  - [x] 카테고리 뱃지 스타일링 (타입 뱃지와 구분되는 outline 스타일)
+  - [x] `TourDetail` 타입에 cat1, cat2, cat3 필드 추가
+  - [x] Client Component로 구현 (클립보드 API 사용을 위해)
+  - [x] toast 메시지 통합 (sonner 사용)
+  - [x] 접근성 개선 (aria-label, aria-hidden)
+  ---
+  에러 사항 해결
+  - [x] 홈페이지 404 에러 해결
+    - [x] `normalizeHomepageUrl` 함수 구현 (프로토콜 자동 추가, 상대 경로 및 빈 값 처리)
+    - [x] URL 정규화 로직 추가 (http://, https:// 검증, 상대 경로 필터링)
+  - [x] 전화번호 미표시 문제 해결
+    - [x] `normalizeTel` 함수 구현 (빈 값 및 공백 처리)
+    - [x] 전화번호 검증 로직 추가 (공백 제거, 빈 문자열 필터링)
+  - [x] 컴포넌트 로직 수정 (정규화 함수 적용)
+    - [x] `detail.homepage` → `normalizedHomepage` 변경
+    - [x] `detail.tel` → `normalizedTel` 변경
+  - [x] JSDoc 주석 추가 (정규화 함수 설명 및 사용 예시)
+  - [x] 홈페이지 링크 about:blank#blocked 오류 해결
+    - [x] URL 유효성 검증 추가 (`new URL()` 생성자 사용)
+    - [x] 프로토콜이 있는 경우와 없는 경우 모두 검증
+    - [x] try-catch로 에러 처리 (유효하지 않은 URL은 null 반환)
+    - [x] JSDoc 주석 업데이트 (URL 유효성 검증 설명 추가)
 - [ ] 운영 정보 섹션 (MVP 2.4.2)
   - [ ] `components/tour-detail/detail-intro.tsx` 생성
     - [ ] `getDetailIntro()` API 연동

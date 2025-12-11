@@ -3,14 +3,12 @@
  * @description 관광지 상세페이지
  * 
  * 관광지 상세 정보를 표시하는 페이지입니다.
- * Phase 3 기본 구조 구현 완료 - 향후 운영정보, 이미지 갤러리, 지도 등 추가 예정
+ * Phase 3 기본 정보 섹션 구현 완료 - 향후 운영정보, 이미지 갤러리, 지도 등 추가 예정
  *
  * 주요 기능:
- * 1. 관광지 기본 정보 표시 (이름, 이미지, 주소, 개요)
- * 2. 전화번호 클릭 시 전화 연결
- * 3. 홈페이지 링크
- * 4. 뒤로가기 버튼 (접근성 개선)
- * 5. 섹션별 Card/Separator 레이아웃
+ * 1. 관광지 기본 정보 표시 (DetailInfo 컴포넌트)
+ * 2. 뒤로가기 버튼 (접근성 개선)
+ * 3. 에러 처리 및 사용자 친화적 메시지
  *
  * 향후 구현 예정 (Phase 3 후속 작업):
  * - generateMetadata 함수: 동적 Open Graph 메타태그 생성
@@ -19,24 +17,25 @@
  *   - og:image: 대표 이미지 (1200x630 권장)
  *   - og:url: 상세페이지 URL
  *   - og:type: "website"
+ * - 운영정보 섹션 (detail-intro.tsx)
+ * - 이미지 갤러리 (detail-gallery.tsx)
+ * - 지도 섹션 (detail-map.tsx)
+ * - 북마크 기능 (bookmark-button.tsx)
  *
  * @dependencies
  * - lib/api/tour-api.ts (getDetailCommon)
- * - lib/types/tour.ts (TourDetail, CONTENT_TYPE_NAMES)
+ * - components/tour-detail/detail-info.tsx
  * - components/ui/button.tsx
  * - components/ui/card.tsx
- * - components/ui/separator.tsx
- * - Next.js Image, Link 컴포넌트
+ * - Next.js Link 컴포넌트
  */
 
 import { getDetailCommon } from '@/lib/api/tour-api';
-import { CONTENT_TYPE_NAMES } from '@/lib/types/tour';
-import { ArrowLeft, MapPin, Phone, Globe, ExternalLink } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
+import DetailInfo from '@/components/tour-detail/detail-info';
 
 interface PageProps {
   params: Promise<{ contentId: string }>;
@@ -48,15 +47,6 @@ export default async function PlaceDetailPage({ params }: PageProps) {
   try {
     // API 호출로 상세 정보 가져오기
     const detail = await getDetailCommon({ contentId });
-
-    // 이미지 URL 결정 (firstimage 우선, 없으면 firstimage2)
-    const imageUrl = detail.firstimage || detail.firstimage2;
-
-    // 주소 조합
-    const address = [detail.addr1, detail.addr2].filter(Boolean).join(' ');
-
-    // 관광 타입 이름 가져오기
-    const typeName = CONTENT_TYPE_NAMES[detail.contenttypeid] || '관광지';
 
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -74,105 +64,8 @@ export default async function PlaceDetailPage({ params }: PageProps) {
 
         {/* 메인 콘텐츠 */}
         <div className="space-y-6">
-          {/* 기본 정보 섹션 (Card) */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary mb-3">
-                    {typeName}
-                  </span>
-                  <CardTitle className="text-3xl font-bold mt-2">
-                    {detail.title}
-                  </CardTitle>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* 대표 이미지 */}
-              {imageUrl ? (
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted">
-                  <Image
-                    src={imageUrl}
-                    alt={detail.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
-                    unoptimized={imageUrl.startsWith('http') && !imageUrl.includes('data.go.kr')}
-                  />
-                </div>
-              ) : (
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                  <p className="text-muted-foreground">이미지 없음</p>
-                </div>
-              )}
-
-              {/* 연락처 정보 */}
-              <div className="space-y-4">
-                {/* 주소 */}
-                {address && (
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                    <div className="flex-1">
-                      <h2 className="text-lg font-semibold mb-1">주소</h2>
-                      <p className="text-muted-foreground">{address}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* 전화번호 */}
-                {detail.tel && (
-                  <div className="flex items-start gap-3">
-                    <Phone className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                    <div className="flex-1">
-                      <h2 className="text-lg font-semibold mb-1">전화번호</h2>
-                      <a
-                        href={`tel:${detail.tel}`}
-                        className="text-primary hover:underline"
-                        aria-label={`${detail.tel}로 전화하기`}
-                      >
-                        {detail.tel}
-                      </a>
-                    </div>
-                  </div>
-                )}
-
-                {/* 홈페이지 */}
-                {detail.homepage && (
-                  <div className="flex items-start gap-3">
-                    <Globe className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                    <div className="flex-1">
-                      <h2 className="text-lg font-semibold mb-1">홈페이지</h2>
-                      <a
-                        href={detail.homepage}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline flex items-center gap-1"
-                        aria-label={`${detail.title} 홈페이지 열기 (새 창)`}
-                      >
-                        {detail.homepage}
-                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 상세 정보 섹션 (Card) */}
-          {detail.overview && (
-            <Card>
-              <CardHeader>
-                <CardTitle>개요</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
-                  {detail.overview}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {/* 기본 정보 섹션 */}
+          <DetailInfo detail={detail} />
 
           {/* 향후 추가 예정 섹션 안내 */}
           <Card className="bg-muted/50">
