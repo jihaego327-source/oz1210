@@ -403,17 +403,26 @@
     - [x] 프로토콜이 있는 경우와 없는 경우 모두 검증
     - [x] try-catch로 에러 처리 (유효하지 않은 URL은 null 반환)
     - [x] JSDoc 주석 업데이트 (URL 유효성 검증 설명 추가)
-- [ ] 운영 정보 섹션 (MVP 2.4.2)
-  - [ ] `components/tour-detail/detail-intro.tsx` 생성
-    - [ ] `getDetailIntro()` API 연동
-    - [ ] 운영시간/개장시간
-    - [ ] 휴무일
-    - [ ] 이용요금
-    - [ ] 주차 가능 여부
-    - [ ] 수용인원
-    - [ ] 체험 프로그램
-    - [ ] 유모차/반려동물 동반 가능 여부
-    - [ ] 정보 없는 항목 숨김 처리
+- [x] 운영 정보 섹션 (MVP 2.4.2)
+  - [x] `components/tour-detail/detail-intro.tsx` 생성
+    - [x] `getDetailIntro()` API 연동
+    - [x] 운영시간/개장시간
+    - [x] 휴무일
+    - [x] 이용요금/문의처
+    - [x] 주차 가능 여부
+    - [x] 수용인원
+    - [x] 체험 프로그램
+    - [x] 유모차/반려동물 동반 가능 여부
+    - [x] 정보 없는 항목 숨김 처리
+  ---
+  추가 개발 사항
+  - [x] `app/places/[contentId]/page.tsx` 통합 - DetailIntro 컴포넌트 import 및 렌더링
+  - [x] API 호출 추가 - getDetailIntro 함수 호출 (contentId, contentTypeId 필요)
+  - [x] 에러 처리 개선 - 운영 정보 API 실패 시에도 기본 정보는 표시되도록 try-catch 처리
+  - [x] 정보 표시 로직 - 정보가 하나도 없으면 섹션 전체 숨김 처리
+  - [x] 아이콘 통합 - lucide-react 아이콘 사용 (Clock, Calendar, Info, Car, Users, BookOpen, Baby, Dog)
+  - [x] 스타일링 - detail-info와 일관된 디자인 (Card 컴포넌트, 아이콘 + 텍스트 구조)
+  - [x] 여러 줄 텍스트 지원 - whitespace-pre-line 사용 (운영시간, 휴무일, 체험 프로그램 등)
 - [ ] 이미지 갤러리 (MVP 2.4.3)
   - [ ] `components/tour-detail/detail-gallery.tsx` 생성
     - [ ] `getDetailImage()` API 연동

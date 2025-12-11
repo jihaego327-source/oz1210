@@ -17,25 +17,27 @@
  *   - og:image: 대표 이미지 (1200x630 권장)
  *   - og:url: 상세페이지 URL
  *   - og:type: "website"
- * - 운영정보 섹션 (detail-intro.tsx)
+ * - 운영정보 섹션 (detail-intro.tsx) ✅
  * - 이미지 갤러리 (detail-gallery.tsx)
  * - 지도 섹션 (detail-map.tsx)
  * - 북마크 기능 (bookmark-button.tsx)
  *
  * @dependencies
- * - lib/api/tour-api.ts (getDetailCommon)
+ * - lib/api/tour-api.ts (getDetailCommon, getDetailIntro)
  * - components/tour-detail/detail-info.tsx
+ * - components/tour-detail/detail-intro.tsx
  * - components/ui/button.tsx
  * - components/ui/card.tsx
  * - Next.js Link 컴포넌트
  */
 
-import { getDetailCommon } from '@/lib/api/tour-api';
+import { getDetailCommon, getDetailIntro } from '@/lib/api/tour-api';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DetailInfo from '@/components/tour-detail/detail-info';
+import DetailIntro from '@/components/tour-detail/detail-intro';
 
 interface PageProps {
   params: Promise<{ contentId: string }>;
@@ -47,6 +49,18 @@ export default async function PlaceDetailPage({ params }: PageProps) {
   try {
     // API 호출로 상세 정보 가져오기
     const detail = await getDetailCommon({ contentId });
+
+    // 운영 정보 API 호출 (병렬 처리, 실패해도 기본 정보는 표시)
+    let intro = null;
+    try {
+      intro = await getDetailIntro({
+        contentId,
+        contentTypeId: detail.contenttypeid,
+      });
+    } catch (error) {
+      // 운영 정보가 없어도 기본 정보는 표시
+      console.warn('운영 정보를 불러올 수 없습니다:', error);
+    }
 
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -67,11 +81,14 @@ export default async function PlaceDetailPage({ params }: PageProps) {
           {/* 기본 정보 섹션 */}
           <DetailInfo detail={detail} />
 
+          {/* 운영 정보 섹션 */}
+          {intro && <DetailIntro intro={intro} />}
+
           {/* 향후 추가 예정 섹션 안내 */}
           <Card className="bg-muted/50">
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">
-                💡 Phase 3 후속 작업에서 운영정보, 이미지 갤러리, 지도, 북마크 등 더 상세한 정보를 추가할 예정입니다.
+                💡 Phase 3 후속 작업에서 이미지 갤러리, 지도, 북마크 등 더 상세한 정보를 추가할 예정입니다.
               </p>
             </CardContent>
           </Card>
