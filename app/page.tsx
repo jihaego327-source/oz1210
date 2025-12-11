@@ -35,6 +35,7 @@ import {
 } from '@/lib/api/tour-api';
 import TourList from '@/components/tour-list';
 import TourFilters from '@/components/tour-filters';
+import TourMapLayout from '@/components/tour-map-layout';
 import { DEFAULT_FILTERS, SORT_ARRANGE_MAP } from '@/lib/types/filter';
 import type { SortBy, PetSize } from '@/lib/types/filter';
 import { filterToursByPet, type TourWithPetInfo } from '@/lib/utils/pet-filter';
@@ -287,9 +288,9 @@ export default async function Home({ searchParams }: HomeProps) {
         {/* 필터 */}
         <TourFilters areaCodes={areaCodes} />
 
-        {/* 관광지 목록 */}
-        <TourList
-          items={tourData?.items || []}
+        {/* 관광지 목록 + 지도 */}
+        <TourMapLayout
+          tours={tourData?.items || []}
           isLoading={false}
           error={error}
           isSearchMode={isSearchMode}

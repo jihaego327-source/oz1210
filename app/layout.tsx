@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SyncUserProvider } from "@/components/providers/sync-user-provider";
 import { Toaster } from "@/components/ui/sonner";
+import NaverMapScript from "@/components/naver-map-script";
 import "./globals.css";
 
 /**
@@ -68,6 +69,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <NaverMapScript />
           <SyncUserProvider>
             <div className="flex flex-col min-h-screen">
               <Navbar />

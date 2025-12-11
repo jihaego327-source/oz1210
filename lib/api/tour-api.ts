@@ -253,14 +253,134 @@ function calculatePagination(
 }
 
 /**
- * KATEC 좌표를 WGS84로 변환
- * KATEC 좌표는 정수형으로 저장되어 있으므로 10000000으로 나눔
+ * KATEC 좌표를 WGS84 좌표로 변환 (자동 감지)
+ *
+ * 입력 좌표의 형태를 자동으로 감지하여 적절히 변환합니다:
+ * - KATEC 정수형 좌표 (경도 >= 1000): 10000000으로 나누어 변환
+ * - WGS84 소수점 좌표 (경도 < 1000): 그대로 사용
+ *
+ * @param mapx - 경도 (KATEC 정수형 문자열 또는 WGS84 소수점 문자열)
+ *   - KATEC 정수형 예: '1269780000'
+ *   - WGS84 소수점 예: '126.9768042386'
+ * @param mapy - 위도 (KATEC 정수형 문자열 또는 WGS84 소수점 문자열)
+ *   - KATEC 정수형 예: '375665000'
+ *   - WGS84 소수점 예: '37.5760725520'
+ * @returns WGS84 좌표 { lng: 경도, lat: 위도 }
+ *
+ * @example
+ * ```typescript
+ * // KATEC 정수형 좌표
+ * const { lng, lat } = convertKATECToWGS84('1269780000', '375665000');
+ * // { lng: 126.978, lat: 37.5665 }
+ *
+ * // WGS84 소수점 좌표 (이미 변환된 경우)
+ * const { lng, lat } = convertKATECToWGS84('126.9768042386', '37.5760725520');
+ * // { lng: 126.9768042386, lat: 37.5760725520 }
+ * ```
  */
 export function convertKATECToWGS84(mapx: string, mapy: string): { lng: number; lat: number } {
-  return {
-    lng: parseFloat(mapx) / 10000000,
-    lat: parseFloat(mapy) / 10000000,
-  };
+  // 입력값 검증
+  if (!mapx || !mapy || mapx.trim() === '' || mapy.trim() === '') {
+    const error = new Error(
+      `좌표 변환 실패: 입력값이 비어있습니다. mapx=${mapx}, mapy=${mapy}`
+    );
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[convertKATECToWGS84]', error.message);
+    }
+    throw error;
+  }
+
+  const lngNum = parseFloat(mapx);
+  const latNum = parseFloat(mapy);
+
+  // 파싱 실패 검증
+  if (isNaN(lngNum) || isNaN(latNum)) {
+    const error = new Error(
+      `좌표 변환 실패: 숫자로 변환할 수 없습니다. mapx=${mapx}, mapy=${mapy}`
+    );
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[convertKATECToWGS84]', error.message);
+    }
+    throw error;
+  }
+
+  // 좌표 형태 자동 감지: KATEC 정수형 vs WGS84 소수점
+  // 한국 좌표 범위: 경도 124~132, 위도 33~43
+  // KATEC 정수형은 1000 이상, WGS84 소수점은 200 이하
+  const isKATEC = lngNum >= 1000;
+
+  const lng = isKATEC ? lngNum / 10000000 : lngNum;
+  const lat = isKATEC ? latNum / 10000000 : latNum;
+
+  // 개발 환경에서 상세한 디버깅 로그
+  if (process.env.NODE_ENV === 'development') {
+    console.group(`[convertKATECToWGS84] 좌표 변환: ${mapx}, ${mapy}`);
+    console.log('입력:', { mapx, mapy });
+    console.log('파싱:', { lngNum, latNum });
+    console.log('좌표 형태:', isKATEC ? 'KATEC 정수형' : 'WGS84 소수점');
+    console.log('출력:', { lng, lat });
+  }
+
+  // 변환 결과 검증 (NaN 체크)
+  if (isNaN(lng) || isNaN(lat)) {
+    const error = new Error(
+      `좌표 변환 실패: 변환 결과가 NaN입니다. mapx=${mapx}, mapy=${mapy} -> lng=${lng}, lat=${lat}`
+    );
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[convertKATECToWGS84]', error.message);
+      console.groupEnd();
+    }
+    throw error;
+  }
+
+  // 한국 영역 좌표 범위 검증 (위도: 33-43, 경도: 124-132)
+  // 범위를 벗어난 좌표는 NaN이나 잘못된 값일 수 있음
+  const isValid =
+    lng >= 124 &&
+    lng <= 132 &&
+    lat >= 33 &&
+    lat <= 43;
+
+  if (!isValid) {
+    const errorMessage = `좌표 변환 결과가 한국 영역 범위를 벗어났습니다. mapx=${mapx}, mapy=${mapy} -> lng=${lng}, lat=${lat} (한국 영역: 경도 124-132, 위도 33-43)`;
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[convertKATECToWGS84] ${errorMessage}`);
+    }
+    // 개발 환경에서는 경고만, 프로덕션에서는 예외 발생하지 않음 (호출부에서 처리)
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('검증 결과:', isValid ? '✅ 유효' : '❌ 무효 (한국 영역 범위 벗어남)');
+    if (!isValid) {
+      console.log('범위 정보:', {
+        '경도 범위': '124-132',
+        '위도 범위': '33-43',
+        '변환된 경도': lng,
+        '변환된 위도': lat,
+      });
+    }
+    console.groupEnd();
+  }
+
+  return { lng, lat };
+}
+
+/**
+ * 좌표가 한국 영역 내에 있는지 검증
+ *
+ * @param lng - 경도
+ * @param lat - 위도
+ * @returns 한국 영역 내 여부
+ */
+export function isValidKoreanCoordinate(lng: number, lat: number): boolean {
+  return (
+    !isNaN(lng) &&
+    !isNaN(lat) &&
+    lng >= 124 &&
+    lng <= 132 &&
+    lat >= 33 &&
+    lat <= 43
+  );
 }
 
 // =====================================================

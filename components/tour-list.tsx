@@ -43,6 +43,12 @@ interface TourListProps {
   isSearchMode?: boolean;
   /** 검색 키워드 */
   keyword?: string;
+  /** 선택된 관광지 ID */
+  selectedTourId?: string | null;
+  /** 관광지 클릭 핸들러 */
+  onTourClick?: (tour: TourItem) => void;
+  /** 관광지 호버 핸들러 */
+  onTourHover?: (tour: TourItem | null) => void;
 }
 
 /**
@@ -66,6 +72,9 @@ export default function TourList({
   className,
   isSearchMode = false,
   keyword,
+  selectedTourId,
+  onTourClick,
+  onTourHover,
 }: TourListProps) {
   // 에러 상태 처리
   if (error) {
@@ -150,7 +159,18 @@ export default function TourList({
       aria-label="관광지 목록"
     >
       {items.map((tour) => (
-        <div key={tour.contentid} role="listitem">
+        <div
+          key={tour.contentid}
+          role="listitem"
+          data-tour-id={tour.contentid}
+          onClick={() => onTourClick?.(tour)}
+          onMouseEnter={() => onTourHover?.(tour)}
+          onMouseLeave={() => onTourHover?.(null)}
+          className={cn(
+            'cursor-pointer transition-all',
+            selectedTourId === tour.contentid && 'ring-2 ring-primary ring-offset-2 rounded-lg'
+          )}
+        >
           <TourCard tour={tour} />
         </div>
       ))}

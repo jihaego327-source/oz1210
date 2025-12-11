@@ -1,0 +1,120 @@
+---
+description: 환경변수 설정 및 사용 가이드 - .env 파일만 사용하며, .env 파일은 절대 읽거나 참조할 수 없음
+globs: **/*
+alwaysApply: true
+---
+
+# Environment Variables
+
+이 프로젝트에서는 환경변수를 `.env` 파일로만 사용합니다.
+
+## ⚠️ 중요: .env 파일 접근 불가
+
+**절대 기억해야 할 사항:**
+- `.env` 파일이나 `.env.local` 파일은 **절대 읽거나 참조할 수 없습니다**
+- 환경변수 값을 확인하거나 참조하려고 시도하지 마세요
+- 환경변수 이름만 참조하고, 실제 값은 사용자가 직접 설정합니다
+
+## 환경변수 목록
+
+### Clerk Authentication
+
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL="/"
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL="/"
+```
+
+### Supabase
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_STORAGE_BUCKET=uploads
+```
+
+### 공공 API
+
+```bash
+NEXT_PUBLIC_TOUR_API_KEY=
+```
+
+### 네이버 지도
+
+```bash
+NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=
+```
+
+## 사용 가이드
+
+### ✅ 올바른 사용법
+
+```typescript
+// 환경변수 이름만 참조
+const apiKey = process.env.NEXT_PUBLIC_TOUR_API_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+// 환경변수가 없을 때 에러 처리
+if (!apiKey) {
+  throw new Error('NEXT_PUBLIC_TOUR_API_KEY가 설정되지 않았습니다.');
+}
+```
+
+### ❌ 잘못된 사용법
+
+```typescript
+// .env 파일을 읽으려고 시도하지 마세요
+// readFile('.env') // ❌ 절대 하지 마세요
+
+// 환경변수 값을 하드코딩하지 마세요
+const apiKey = 'hardcoded-value'; // ❌ 절대 하지 마세요
+```
+
+## 환경변수 접근 패턴
+
+### Server Component / Server Action
+
+```typescript
+// 서버 사이드에서 환경변수 접근
+const serverKey = process.env.CLERK_SECRET_KEY;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+```
+
+### Client Component
+
+```typescript
+// 클라이언트 사이드에서 접근 가능한 환경변수만 사용
+// NEXT_PUBLIC_ 접두사가 있는 환경변수만 클라이언트에서 접근 가능
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+```
+
+## 환경변수 검증
+
+코드에서 환경변수를 사용할 때는 항상 존재 여부를 확인하세요:
+
+```typescript
+function getApiKey(): string {
+  const apiKey = process.env.NEXT_PUBLIC_TOUR_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error(
+      'NEXT_PUBLIC_TOUR_API_KEY 환경변수가 설정되지 않았습니다. ' +
+      '.env 파일을 확인해주세요.'
+    );
+  }
+  
+  return apiKey;
+}
+```
+
+## 주의사항
+
+1. **`.env` 파일은 절대 읽지 마세요**: 파일 내용을 확인하거나 참조하려고 시도하지 마세요
+2. **환경변수 값은 하드코딩하지 마세요**: 실제 값을 코드에 직접 작성하지 마세요
+3. **환경변수 이름만 사용하세요**: `process.env.VARIABLE_NAME` 형식으로만 참조하세요
+4. **클라이언트 접근**: `NEXT_PUBLIC_` 접두사가 없는 환경변수는 서버 사이드에서만 사용 가능합니다
+5. **보안**: `CLERK_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY` 같은 민감한 키는 절대 클라이언트에 노출되지 않도록 주의하세요
