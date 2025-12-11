@@ -9,18 +9,8 @@
  * 1. 관광지 기본 정보 표시 (DetailInfo 컴포넌트)
  * 2. 뒤로가기 버튼 (접근성 개선)
  * 3. 에러 처리 및 사용자 친화적 메시지
- *
- * 향후 구현 예정 (Phase 3 후속 작업):
- * - generateMetadata 함수: 동적 Open Graph 메타태그 생성
- *   - og:title: 관광지명
- *   - og:description: 관광지 설명 (100자 이내)
- *   - og:image: 대표 이미지 (1200x630 권장)
- *   - og:url: 상세페이지 URL
- *   - og:type: "website"
- * - 운영정보 섹션 (detail-intro.tsx) ✅
- * - 이미지 갤러리 (detail-gallery.tsx) ✅
- * - 지도 섹션 (detail-map.tsx) ✅
- * - 북마크 기능 (bookmark-button.tsx)
+ * 4. 동적 Open Graph 메타태그 생성 (generateMetadata)
+ * 5. 공유 기능 (ShareButton 컴포넌트)
  *
  * @dependencies
  * - lib/api/tour-api.ts (getDetailCommon, getDetailIntro)
@@ -28,23 +18,107 @@
  * - components/tour-detail/detail-intro.tsx
  * - components/tour-detail/detail-gallery.tsx
  * - components/tour-detail/detail-map.tsx
+ * - components/tour-detail/share-button.tsx
  * - components/ui/button.tsx
  * - components/ui/card.tsx
  * - Next.js Link 컴포넌트
+ * - Next.js Metadata API (generateMetadata)
  */
 
 import { getDetailCommon, getDetailIntro } from '@/lib/api/tour-api';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { headers } from 'next/headers';
+import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import DetailInfo from '@/components/tour-detail/detail-info';
 import DetailIntro from '@/components/tour-detail/detail-intro';
 import DetailGallery from '@/components/tour-detail/detail-gallery';
 import DetailMap from '@/components/tour-detail/detail-map';
+import ShareButton from '@/components/tour-detail/share-button';
 
 interface PageProps {
   params: Promise<{ contentId: string }>;
+}
+
+/**
+ * 동적 Open Graph 메타태그 생성
+ *
+ * 관광지 상세 정보를 기반으로 소셜 미디어 공유용 메타태그를 생성합니다.
+ * PRD 2.4.5 공유 기능 요구사항을 구현합니다.
+ *
+ * @param props - 페이지 props (params 포함)
+ * @returns Next.js Metadata 객체
+ */
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  try {
+    const { contentId } = await params;
+    const detail = await getDetailCommon({ contentId });
+
+    // 절대 URL 생성 (headers에서 host 정보 가져오기)
+    const headersList = await headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const baseUrl = `${protocol}://${host}`;
+    const url = `${baseUrl}/places/${contentId}`;
+
+    // 설명 텍스트 정리 (100자 이내, HTML 태그 제거)
+    let description = detail.overview || '한국관광공사 공공 API를 활용한 관광지 정보 서비스';
+    // HTML 태그 제거
+    description = description.replace(/<[^>]*>/g, '');
+    // 100자 제한
+    if (description.length > 100) {
+      description = description.substring(0, 100) + '...';
+    }
+
+    // 이미지 URL 정규화 (절대 경로로 변환)
+    let imageUrl = detail.firstimage || detail.firstimage2;
+    if (imageUrl) {
+      // 이미 절대 경로인 경우 그대로 사용
+      if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+        // 상대 경로인 경우 절대 경로로 변환
+        imageUrl = `${baseUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+      }
+    } else {
+      // 기본 이미지 사용
+      imageUrl = `${baseUrl}/og-image.png`;
+    }
+
+    return {
+      title: `${detail.title} - My Trip`,
+      description,
+      openGraph: {
+        title: detail.title,
+        description,
+        type: 'website',
+        url,
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: detail.title,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: detail.title,
+        description,
+        images: [imageUrl],
+      },
+    };
+  } catch (error) {
+    // API 실패 시 기본 메타태그 반환
+    console.error('메타태그 생성 실패:', error);
+    return {
+      title: '관광지 정보 - My Trip',
+      description: '한국관광공사 공공 API를 활용한 관광지 정보 서비스',
+    };
+  }
 }
 
 export default async function PlaceDetailPage({ params }: PageProps) {

@@ -33,6 +33,7 @@ import type { TourDetail } from '@/lib/types/tour';
 import { CONTENT_TYPE_NAMES } from '@/lib/types/tour';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import ShareButton from '@/components/tour-detail/share-button';
 
 interface DetailInfoProps {
   /** 관광지 상세 정보 */
@@ -193,9 +194,12 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
                   </span>
                 )}
               </div>
-              <CardTitle className="text-3xl font-bold mt-2">
-                {detail.title}
-              </CardTitle>
+              <div className="flex items-start justify-between gap-4 mt-2">
+                <CardTitle className="text-3xl font-bold flex-1">
+                  {detail.title}
+                </CardTitle>
+                <ShareButton title={detail.title} size="sm" variant="outline" />
+              </div>
             </div>
           </div>
         </CardHeader>
