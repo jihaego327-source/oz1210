@@ -8,14 +8,16 @@
  * 1. 관광지 목록 표시 (Phase 2.2) ✅
  * 2. 지역/타입 필터 (Phase 2.3) ✅
  * 3. 키워드 검색 (Phase 2.4) ✅
- * 4. 네이버 지도 연동 (Phase 2.5)
- * 5. 페이지네이션 (Phase 2.6)
+ * 4. 네이버 지도 연동 (Phase 2.5) ✅
+ * 5. 페이지네이션 (Phase 2.6) ✅
  *
  * 현재 구현:
  * - 기본 레이아웃 구조 (헤더, 메인, 푸터)
  * - 관광지 목록 표시 (필터 적용)
- * - 필터 기능 (지역, 타입, 정렬)
+ * - 필터 기능 (지역, 타입, 정렬, 반려동물)
  * - 키워드 검색 기능
+ * - 네이버 지도 연동 (마커 표시, 리스트-지도 연동)
+ * - 페이지네이션 (페이지 번호 선택 방식)
  * - API 연동 (getAreaBasedList, getAreaCode, searchKeyword)
  *
  * @dependencies
@@ -207,7 +209,14 @@ export default async function Home({ searchParams }: HomeProps) {
       }
     }
   } catch (err) {
-    error = err instanceof Error ? err : new Error('알 수 없는 오류가 발생했습니다.');
+    if (err instanceof Error) {
+      error = err;
+    } else if (typeof err === 'string') {
+      error = new Error(err);
+    } else {
+      error = new Error('관광지 정보를 불러오는 중 오류가 발생했습니다.');
+    }
+    console.error('관광지 목록 로드 실패:', err);
   }
 
   // 반려동물 필터 적용
@@ -295,6 +304,7 @@ export default async function Home({ searchParams }: HomeProps) {
           error={error}
           isSearchMode={isSearchMode}
           keyword={keyword}
+          pagination={tourData?.pagination}
         />
       </div>
     </div>

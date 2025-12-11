@@ -313,3 +313,136 @@ export default function RootLayout({ children }) {
 - PRD 명세에 맞는 URL 파라미터 사용 (`ncpKeyId`)
 - 네이버 지도 API가 정상적으로 로드되고 지도 및 마커가 표시됨
 - **문제 해결 완료!** 🎉
+
+---
+
+# 관광지 상세페이지 404 오류 해결 과정 (Troubleshooting Report)
+
+## 📌 1. 문제 상황 (Problem)
+
+**증상:**
+- 홈페이지에서 관광지 카드를 클릭하면 404 오류 발생
+- 상세페이지로 이동하지 못하고 "Not Found" 페이지가 표시됨
+- 브라우저 콘솔에 404 에러 메시지 표시
+
+**에러 메시지:**
+```
+125472:1  Failed to load resource: the server responded with a status of 404 (Not Found)
+```
+
+**환경:**
+- **Framework:** Next.js 15 (App Router)
+- **문제 파일:** `app/places/[contentId]/page.tsx` (존재하지 않음)
+- **관련 컴포넌트:** `components/tour-card.tsx`
+
+---
+
+## 🔍 2. 원인 분석 (Root Cause Analysis)
+
+### 최종 원인: 상세페이지 라우트 파일이 존재하지 않음 🚨
+
+**문제 코드:**
+```typescript
+// components/tour-card.tsx
+<Link
+  href={`/places/${tour.contentid}`}  // ❌ 이 경로에 해당하는 페이지가 없음
+  className={...}
+>
+  {/* 카드 내용 */}
+</Link>
+```
+
+**원인:**
+1. `TourCard` 컴포넌트는 관광지 카드를 클릭하면 `/places/[contentId]` 경로로 링크를 생성함
+   - 예: `/places/125472`
+2. Next.js App Router에서는 동적 라우트를 위해 `app/places/[contentId]/page.tsx` 파일이 필요함
+3. 하지만 해당 파일이 존재하지 않아서 Next.js가 페이지를 찾을 수 없음
+4. 결과적으로 404 오류 발생
+
+**추가 발견 사항:**
+- `getDetailCommon()` API 함수는 이미 구현되어 있음 (`lib/api/tour-api.ts`)
+- `TourDetail` 타입 정의도 이미 존재함 (`lib/types/tour.ts`)
+- Phase 3 (상세페이지)는 TODO에 있으나 아직 구현되지 않은 상태
+- Phase 2에서 카드 컴포넌트만 먼저 구현되어 링크는 생성되지만 대상 페이지가 없는 상황
+
+---
+
+## ✅ 3. 해결 방법 (Solution)
+
+### 해결 전략: 임시 상세페이지 생성
+
+Phase 3의 본격적인 구현 전까지 기본 정보를 표시하는 임시 페이지를 생성하여 404 오류를 해결했습니다.
+
+### 구현 내용: `app/places/[contentId]/page.tsx` 파일 생성
+
+**주요 기능:**
+- Next.js 15 App Router 동적 라우팅 패턴 적용 (`await params`)
+- `getDetailCommon()` API 호출로 기본 정보 가져오기
+- 기본 레이아웃: 뒤로가기 버튼 + 기본 정보 섹션
+- 에러 처리: API 실패 시 사용자 친화적인 에러 메시지
+
+**표시할 정보:**
+- 관광지명 (대제목)
+- 관광 타입 뱃지
+- 대표 이미지 (이미지 없을 때 처리)
+- 주소 (MapPin 아이콘)
+- 전화번호 (클릭 시 전화 연결, Phone 아이콘)
+- 홈페이지 (새 탭에서 열림, Globe 아이콘)
+- 개요 (긴 설명문)
+
+**코드 구조:**
+```typescript
+// app/places/[contentId]/page.tsx
+export default async function PlaceDetailPage({ params }: PageProps) {
+  const { contentId } = await params;  // Next.js 15 패턴
+  
+  try {
+    const detail = await getDetailCommon({ contentId });
+    // 기본 정보 표시
+  } catch (error) {
+    // 에러 처리 UI
+  }
+}
+```
+
+**구현 세부사항:**
+- Server Component로 구현 (Next.js 15 권장 패턴)
+- 조건부 렌더링으로 정보 없는 항목 숨김 처리
+- Next.js `Image` 컴포넌트로 이미지 최적화
+- 반응형 디자인 적용 (모바일 우선)
+- 임시 페이지임을 명시하는 안내 메시지 포함
+
+---
+
+## 💡 4. 배운 점 (Key Takeaways)
+
+1. **Next.js App Router의 동적 라우팅:**
+   - 동적 라우트는 `app/[param]/page.tsx` 형식의 파일 구조가 필요함
+   - `[param]`은 폴더 이름으로, 해당 폴더 내에 `page.tsx` 파일이 있어야 함
+   - Next.js 15에서는 `params`가 Promise이므로 `await params`로 받아야 함
+
+2. **점진적 개발 시 주의사항:**
+   - 한 컴포넌트에서 다른 페이지로 링크를 생성하는 경우, 대상 페이지가 존재하는지 확인 필요
+   - 링크는 생성했지만 대상 페이지가 없는 경우 404 오류 발생
+   - Phase별 개발 시 의존성을 고려하여 순서를 결정해야 함
+
+3. **임시 페이지의 가치:**
+   - 완전한 기능 구현 전까지도 사용자 경험을 위해 기본 페이지 제공이 중요
+   - 임시 페이지로 기본 기능을 제공하고, 이후 점진적으로 확장 가능
+   - 사용자에게 임시 버전임을 명시하면 기대치 관리에 도움
+
+4. **에러 처리의 중요성:**
+   - API 호출 실패, 잘못된 contentId 등의 경우를 대비한 에러 처리 필요
+   - 사용자 친화적인 에러 메시지와 복구 경로(뒤로가기, 홈으로 돌아가기) 제공
+
+---
+
+## 🚀 5. 최종 결과
+
+- 상세페이지 라우트 파일 생성 (`app/places/[contentId]/page.tsx`)
+- 관광지 카드 클릭 시 404 오류 해결
+- 기본 상세 정보 정상 표시 (이름, 이미지, 주소, 전화번호, 홈페이지, 개요)
+- 뒤로가기 버튼으로 목록으로 복귀 가능
+- 에러 발생 시 사용자 친화적 메시지 및 복구 경로 제공
+- Phase 3에서 확장 가능한 구조로 설계
+- **문제 해결 완료!** 🎉

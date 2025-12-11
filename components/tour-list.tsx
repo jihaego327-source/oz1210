@@ -85,13 +85,16 @@ export default function TourList({
           ? 'network'
           : 'unknown';
 
+    // 재시도 핸들러: 전달된 함수가 있으면 사용, 없으면 페이지 새로고침
+    const handleRetry = onRetry || (() => window.location.reload());
+
     return (
       <div className={cn('py-8', className)}>
         <Error
           title="관광지 목록을 불러올 수 없습니다"
           message={error.message || '알 수 없는 오류가 발생했습니다.'}
           type={errorType}
-          onRetry={onRetry}
+          onRetry={handleRetry}
         />
       </div>
     );

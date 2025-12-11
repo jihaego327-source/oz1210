@@ -10,18 +10,21 @@
  * 2. 선택된 관광지 상태 관리
  * 3. 리스트 항목 클릭 시 지도 이동 및 마커 강조
  * 4. 마커 클릭 시 리스트 항목 강조
+ * 5. 페이지네이션 표시
  *
  * @dependencies
  * - components/tour-list.tsx
+ * - components/tour-pagination.tsx
  * - components/naver-map.tsx
- * - lib/types/tour.ts (TourItem)
+ * - lib/types/tour.ts (TourItem, PaginationInfo)
  */
 
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { TourItem } from '@/lib/types/tour';
+import type { TourItem, PaginationInfo } from '@/lib/types/tour';
 import TourList from '@/components/tour-list';
+import TourPagination from '@/components/tour-pagination';
 import { NaverMap } from '@/components/naver-map';
 import { Button } from '@/components/ui/button';
 import { List, Map as MapIcon } from 'lucide-react';
@@ -34,10 +37,14 @@ interface TourMapLayoutProps {
   isLoading?: boolean;
   /** 에러 상태 */
   error: Error | null;
+  /** 재시도 함수 (선택 사항) */
+  onRetry?: () => void;
   /** 검색 모드 여부 */
   isSearchMode?: boolean;
   /** 검색 키워드 */
   keyword?: string;
+  /** 페이지네이션 정보 */
+  pagination?: PaginationInfo;
   /** 추가 스타일 클래스 */
   className?: string;
 }
@@ -61,8 +68,10 @@ export default function TourMapLayout({
   tours,
   isLoading = false,
   error,
+  onRetry,
   isSearchMode = false,
   keyword,
+  pagination,
   className,
 }: TourMapLayoutProps) {
   const [selectedTourId, setSelectedTourId] = useState<string | undefined>();
@@ -195,21 +204,31 @@ export default function TourMapLayout({
         <div
           ref={listContainerRef}
           className={cn(
-            'overflow-y-auto',
-            viewMode === 'map' ? 'hidden md:block' : 'block',
+            'overflow-y-auto flex flex-col',
+            viewMode === 'map' ? 'hidden md:flex' : 'flex',
             'md:max-h-[600px]'
           )}
         >
-          <TourList
-            items={tours}
-            isLoading={isLoading}
-            error={error}
-            isSearchMode={isSearchMode}
-            keyword={keyword}
-            selectedTourId={selectedTourId}
-            onTourClick={handleTourSelect}
-            onTourHover={handleTourHover}
-          />
+          <div className="flex-1">
+            <TourList
+              items={tours}
+              isLoading={isLoading}
+              error={error}
+              onRetry={onRetry}
+              isSearchMode={isSearchMode}
+              keyword={keyword}
+              selectedTourId={selectedTourId}
+              onTourClick={handleTourSelect}
+              onTourHover={handleTourHover}
+            />
+          </div>
+
+          {/* 페이지네이션 */}
+          {!error && !isLoading && pagination && (
+            <div className="mt-6 pt-6 border-t">
+              <TourPagination pagination={pagination} />
+            </div>
+          )}
         </div>
 
         {/* 네이버 지도 */}
