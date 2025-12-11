@@ -166,15 +166,17 @@ export default function TourList({
           key={tour.contentid}
           role="listitem"
           data-tour-id={tour.contentid}
-          onClick={() => onTourClick?.(tour)}
           onMouseEnter={() => onTourHover?.(tour)}
           onMouseLeave={() => onTourHover?.(null)}
           className={cn(
-            'cursor-pointer transition-all',
+            'transition-all',
             selectedTourId === tour.contentid && 'ring-2 ring-primary ring-offset-2 rounded-lg'
           )}
         >
-          <TourCard tour={tour} />
+          <TourCard
+            tour={tour}
+            onClick={() => onTourClick?.(tour)}
+          />
         </div>
       ))}
     </div>

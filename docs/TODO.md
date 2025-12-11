@@ -341,12 +341,29 @@
 
 ## Phase 3: 상세페이지 (`/places/[contentId]`)
 
-- [ ] 페이지 기본 구조
-  - [ ] `app/places/[contentId]/page.tsx` 생성
-    - [ ] 동적 라우팅 설정
-    - [ ] 뒤로가기 버튼 (헤더)
-    - [ ] 기본 레이아웃 구조
-    - [ ] 라우팅 테스트
+- [x] 페이지 기본 구조
+  - [x] `app/places/[contentId]/page.tsx` 생성
+    - [x] 동적 라우팅 설정
+    - [x] 뒤로가기 버튼 (헤더)
+    - [x] 기본 레이아웃 구조
+    - [x] 라우팅 테스트
+  ---
+  추가 개발 사항
+  - [x] `components/tour-detail/` 디렉토리 생성 (향후 섹션 컴포넌트용)
+  - [x] shadcn/ui Card 컴포넌트 설치 및 적용
+  - [x] shadcn/ui Separator 컴포넌트 설치 및 적용
+  - [x] 섹션별 Card/Separator 혼합 레이아웃 구현
+    - [x] 기본 정보 섹션: Card 컴포넌트 사용
+    - [x] 상세 정보 섹션: Card 컴포넌트 사용
+  - [x] 뒤로가기 버튼 접근성 개선 (aria-label, aria-hidden 추가)
+  - [x] 에러 처리 개선
+    - [x] 에러 타입별 메시지 구분 (404, 네트워크 오류 등)
+    - [x] 사용자 친화적인 에러 메시지
+    - [x] 에러 상태도 Card 컴포넌트로 표시
+  - [x] 반응형 디자인 개선
+    - [x] 이미지 sizes 속성 최적화 (모바일/태블릿/데스크톱)
+    - [x] 컨테이너 최대 너비 설정 (max-w-4xl)
+  - [x] 메타데이터 구조 주석 추가 (generateMetadata 함수 향후 구현 참고용)
 - [ ] 기본 정보 섹션 (MVP 2.4.1)
   - [ ] `components/tour-detail/detail-info.tsx` 생성
     - [ ] `getDetailCommon()` API 연동

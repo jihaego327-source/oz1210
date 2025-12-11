@@ -4,7 +4,7 @@
  *
  * 관광지 정보를 카드 형태로 표시하는 컴포넌트입니다.
  * 썸네일 이미지, 관광지명, 주소, 타입 뱃지, 개요를 표시하고,
- * 클릭 시 상세페이지로 이동합니다.
+ * 카드 클릭 시 지도로 이동하고, 상세보기 버튼으로 상세페이지로 이동합니다.
  *
  * 주요 기능:
  * 1. 썸네일 이미지 표시 (기본 이미지 fallback)
@@ -12,11 +12,13 @@
  * 3. 관광 타입 뱃지 표시
  * 4. 간단한 개요 표시 (1-2줄)
  * 5. 호버 효과 (scale, shadow)
- * 6. 상세페이지 링크
+ * 6. 카드 클릭 시 지도 이동 (onClick prop)
+ * 7. 상세보기 버튼으로 상세페이지 이동
  *
  * @dependencies
  * - Next.js Link, Image 컴포넌트
  * - lib/types/tour.ts (TourItem, CONTENT_TYPE_NAMES)
+ * - components/ui/button.tsx
  * - Tailwind CSS v4
  */
 
@@ -24,14 +26,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { TourItem } from '@/lib/types/tour';
 import { CONTENT_TYPE_NAMES } from '@/lib/types/tour';
-import { MapPin } from 'lucide-react';
+import { MapPin, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface TourCardProps {
   /** 관광지 정보 */
   tour: TourItem;
   /** 추가 스타일 클래스 */
   className?: string;
+  /** 카드 클릭 핸들러 (지도 이동용) */
+  onClick?: () => void;
 }
 
 /**
@@ -39,10 +44,10 @@ interface TourCardProps {
  *
  * @example
  * ```tsx
- * <TourCard tour={tourItem} />
+ * <TourCard tour={tourItem} onClick={() => handleMapMove(tour)} />
  * ```
  */
-export default function TourCard({ tour, className }: TourCardProps) {
+export default function TourCard({ tour, className, onClick }: TourCardProps) {
   // 이미지 URL 결정 (firstimage2 우선, 없으면 firstimage, 둘 다 없으면 기본 이미지)
   const imageUrl =
     tour.firstimage2 || tour.firstimage || '/placeholder-tour.jpg';
@@ -60,14 +65,19 @@ export default function TourCard({ tour, className }: TourCardProps) {
       : tour.overview
     : '';
 
+  // 상세보기 버튼 클릭 핸들러 (이벤트 전파 방지)
+  const handleDetailClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.stopPropagation(); // 부모의 onClick 이벤트 방지
+  };
+
   return (
-    <Link
-      href={`/places/${tour.contentid}`}
+    <div
+      onClick={onClick}
       className={cn(
         'group block rounded-lg border bg-card text-card-foreground shadow-sm transition-all hover:scale-[1.02] hover:shadow-md',
+        onClick && 'cursor-pointer',
         className
       )}
-      aria-label={`${tour.title} 상세보기`}
     >
       {/* 썸네일 이미지 */}
       <div className="relative aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
@@ -109,8 +119,25 @@ export default function TourCard({ tour, className }: TourCardProps) {
             {overview}
           </p>
         )}
+
+        {/* 상세보기 버튼 */}
+        <Link
+          href={`/places/${tour.contentid}`}
+          onClick={handleDetailClick}
+          className="block mt-2"
+          aria-label={`${tour.title} 상세보기`}
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+          >
+            상세보기
+            <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />
+          </Button>
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }
 
