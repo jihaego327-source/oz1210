@@ -489,24 +489,43 @@
   - [x] generateMetadata 함수에 Twitter Card 메타태그 추가
   - [x] DetailInfo 컴포넌트에 ShareButton 통합 (관광지명 옆에 배치)
   - [x] ShareButton 컴포넌트에 JSDoc 주석 추가
-- [ ] 북마크 기능 (MVP 2.4.5)
-  - [ ] `components/bookmarks/bookmark-button.tsx` 생성
-    - [ ] 별 아이콘 (채워짐/비어있음)
-    - [ ] 북마크 상태 확인 (Supabase 조회)
-    - [ ] 북마크 추가/제거 기능
-    - [ ] 인증된 사용자 확인 (Clerk)
-    - [ ] 로그인하지 않은 경우: 로그인 유도 또는 localStorage 임시 저장
-  - [ ] Supabase 연동
-    - [ ] `lib/api/supabase-api.ts` 생성
-      - [ ] `getBookmark()` - 북마크 조회
-      - [ ] `addBookmark()` - 북마크 추가
-      - [ ] `removeBookmark()` - 북마크 제거
-      - [ ] `getUserBookmarks()` - 사용자 북마크 목록
-    - [ ] `bookmarks` 테이블 사용 (db.sql 참고)
-      - [ ] `user_id` (users 테이블 참조)
-      - [ ] `content_id` (한국관광공사 API contentid)
-      - [ ] UNIQUE 제약 (user_id, content_id)
-  - [ ] 상세페이지에 북마크 버튼 추가
+- [x] 북마크 기능 (MVP 2.4.5)
+  - [x] `components/bookmarks/bookmark-button.tsx` 생성
+    - [x] 별 아이콘 (채워짐/비어있음)
+    - [x] 북마크 상태 확인 (Supabase 조회)
+    - [x] 북마크 추가/제거 기능
+    - [x] 인증된 사용자 확인 (Clerk)
+    - [x] 로그인하지 않은 경우: 로그인 유도 또는 localStorage 임시 저장
+  - [x] Supabase 연동
+    - [x] `lib/api/supabase-api.ts` 생성
+      - [x] `getBookmark()` - 북마크 조회
+      - [x] `addBookmark()` - 북마크 추가
+      - [x] `removeBookmark()` - 북마크 제거
+      - [x] `getUserBookmarks()` - 사용자 북마크 목록
+    - [x] `bookmarks` 테이블 사용 (db.sql 참고)
+      - [x] `user_id` (users 테이블 참조)
+      - [x] `content_id` (한국관광공사 API contentid)
+      - [x] UNIQUE 제약 (user_id, content_id)
+  - [x] 상세페이지에 북마크 버튼 추가
+  ---
+  추가 개발 사항
+  - [x] `getSupabaseUserId()` 헬퍼 함수 추가 - Clerk user ID를 Supabase user_id로 변환
+  - [x] 북마크 API 함수들에 에러 처리 추가 - UNIQUE 제약 위반 시 기존 북마크 반환
+  - [x] 북마크 API 함수들에 JSDoc 주석 추가 - 함수 설명 및 사용 예시
+  - [x] BookmarkButton 컴포넌트에 로딩 상태 처리 추가 - 초기 로딩 중 버튼 비활성화
+  - [x] BookmarkButton 컴포넌트에 토글 중 상태 처리 추가 - 중복 클릭 방지
+  - [x] BookmarkButton 컴포넌트에 낙관적 업데이트 적용 - 즉시 UI 업데이트 후 서버 동기화
+  - [x] BookmarkButton 컴포넌트에 접근성 개선 - aria-label 추가
+  - [x] BookmarkButton 컴포넌트에 로그인하지 않은 경우 SignInButton 통합 - Clerk 모달 사용
+  - [x] DetailInfo 컴포넌트에 BookmarkButton 통합 - ShareButton과 함께 배치
+  - [x] 북마크 버튼 스타일링 - 별 아이콘 채움 상태 표시 (fill-yellow-400)
+  ---
+  에러 사항 해결
+  - [x] JSDoc 주석 파싱 에러 해결 - clerk-client.ts 파일의 JSDoc 주석 내 JSX 주석 제거
+    - [x] 문제 원인 분석 - JSDoc 주석 내 `{/* ... */}` JSX 주석이 Turbopack 파서에 의해 실제 코드로 인식됨
+    - [x] clerk-client.ts 파일 수정 - 43번째 줄의 `{/* ... */}` 부분을 `...`로 변경
+    - [x] server.ts 파일 확인 - 유사한 문제 없음 확인
+    - [x] 빌드 에러 해결 - Next.js 15.5.7 Turbopack 파싱 에러 수정
 - [ ] 반려동물 정보 섹션 (MVP 2.5)
   - [ ] `components/tour-detail/detail-pet-tour.tsx` 생성
     - [ ] `getDetailPetTour()` API 연동

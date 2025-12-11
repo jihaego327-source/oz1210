@@ -34,6 +34,7 @@ import { CONTENT_TYPE_NAMES } from '@/lib/types/tour';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ShareButton from '@/components/tour-detail/share-button';
+import BookmarkButton from '@/components/bookmarks/bookmark-button';
 
 interface DetailInfoProps {
   /** 관광지 상세 정보 */
@@ -198,7 +199,15 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
                 <CardTitle className="text-3xl font-bold flex-1">
                   {detail.title}
                 </CardTitle>
-                <ShareButton title={detail.title} size="sm" variant="outline" />
+                <div className="flex items-center gap-2">
+                  <BookmarkButton
+                    contentId={detail.contentid}
+                    title={detail.title}
+                    size="sm"
+                    variant="ghost"
+                  />
+                  <ShareButton title={detail.title} size="sm" variant="outline" />
+                </div>
               </div>
             </div>
           </div>

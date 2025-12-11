@@ -40,7 +40,7 @@ import { useMemo } from "react";
  *     loadTasks();
  *   }, [user, isLoaded, supabase]);
  *
- *   return <div>{/* ... */}</div>;
+ *   return <div>...</div>;
  * }
  * ```
  */
