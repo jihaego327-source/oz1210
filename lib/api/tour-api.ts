@@ -852,7 +852,31 @@ export async function getDetailPetTour(params: {
         return null;
       }
 
-      return items[0];
+      const petInfo = items[0];
+      
+      // 모든 필드가 비어있는 경우 null 반환 (레거시 필드 + 실제 API 필드 모두 확인)
+      const hasAnyData = !!(
+        petInfo.chkpetleash?.trim() ||
+        petInfo.chkpetsize?.trim() ||
+        petInfo.chkpetplace?.trim() ||
+        petInfo.chkpetfee?.trim() ||
+        petInfo.petinfo?.trim() ||
+        // 실제 API 필드 추가
+        petInfo.acmpyTypeCd?.trim() ||
+        petInfo.etcAcmpyInfo?.trim() ||
+        petInfo.acmpyPsblCpam?.trim() ||
+        petInfo.acmpyNeedMtr?.trim()
+      );
+      
+      if (!hasAnyData) {
+        // 디버깅: 빈 데이터 로그
+        console.log(`[getDetailPetTour] contentId: ${params.contentId} - 모든 필드가 비어있음`, {
+          rawResponse: petInfo,
+        });
+        return null;
+      }
+
+      return petInfo;
     } catch (error) {
       const type = getErrorType(error);
       const message = getErrorMessage(error, type);

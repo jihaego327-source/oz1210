@@ -180,18 +180,38 @@ export interface PetTourInfo {
   contentid: string;
   /** 콘텐츠타입ID */
   contenttypeid: string;
-  /** 애완동물 동반 여부 */
+  /** 애완동물 동반 여부 (레거시 필드) - 표시 우선순위: 7 (acmpyTypeCd 없을 때만) */
   chkpetleash?: string;
-  /** 애완동물 크기 제한 */
+  /** 애완동물 크기 제한 (레거시 필드) - 표시 우선순위: 4 (acmpyPsblCpam 없을 때만) */
   chkpetsize?: string;
-  /** 애완동물 입장 가능 장소 */
+  /** 애완동물 입장 가능 장소 (레거시 필드) - 표시 우선순위: 5 */
   chkpetplace?: string;
-  /** 애완동물 추가 요금 */
+  /** 애완동물 추가 요금 (레거시 필드) - 표시 우선순위: 6 */
   chkpetfee?: string;
-  /** 기타 반려동물 정보 */
+  /** 기타 반려동물 정보 (레거시 필드) - 표시 우선순위: 8 (etcAcmpyInfo 없을 때만) */
   petinfo?: string;
   /** 주차장 정보 */
   parking?: string;
+  
+  // 실제 API 응답 필드 (detailPetTour2)
+  /** 동반 가능 타입 (예: '일부구역 동반가능', '전 구역 동반가능') - 표시 우선순위: 1 */
+  acmpyTypeCd?: string;
+  /** 기타 동반 정보 - 표시 우선순위: 6 */
+  etcAcmpyInfo?: string;
+  /** 동반 가능 범위 (예: '전 견종 동반 가능', '소형견만 동반 가능') - 표시 우선순위: 2 */
+  acmpyPsblCpam?: string;
+  /** 필요한 조치 (예: '목줄 착용', '입마개 착용') - 표시 우선순위: 3 */
+  acmpyNeedMtr?: string;
+  /** 사고 위험 조치 */
+  relaAcdntRiskMtr?: string;
+  /** 소유 시설 */
+  relaPosesFclty?: string;
+  /** 가구 제품 목록 */
+  relaFrnshPrdlst?: string;
+  /** 구매 제품 목록 */
+  relaPurcPrdlst?: string;
+  /** 렌탈 제품 목록 */
+  relaRntlPrdlst?: string;
 }
 
 /**

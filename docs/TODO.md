@@ -208,6 +208,13 @@
     - [x] 지역 목록과 관광지 목록 병렬 로드 (Promise.all)
     - [x] 정렬 옵션 매핑 (modifiedtime → 'C', title → 'A')
     - [x] contentTypeIds 다중 선택 시 첫 번째만 사용 (API 제약)
+  ---
+  에러 사항 해결 (지역 목록 조회 429 에러 해결)
+  - [x] 지역 목록 조회 429 에러 해결
+    - [x] `app/page.tsx` - 지역 목록 조회 배치 처리 추가
+      - [x] 배치 크기 설정 (3개씩 처리)
+      - [x] 배치 사이 딜레이 추가 (2초)
+      - [x] Promise.all 대신 배치 처리로 변경
 - [x] 검색 기능 (MVP 2.3)
   - [x] `components/tour-search.tsx` 생성
     - [x] 검색창 UI (헤더 또는 메인 영역)
@@ -526,16 +533,34 @@
     - [x] clerk-client.ts 파일 수정 - 43번째 줄의 `{/* ... */}` 부분을 `...`로 변경
     - [x] server.ts 파일 확인 - 유사한 문제 없음 확인
     - [x] 빌드 에러 해결 - Next.js 15.5.7 Turbopack 파싱 에러 수정
-- [ ] 반려동물 정보 섹션 (MVP 2.5)
-  - [ ] `components/tour-detail/detail-pet-tour.tsx` 생성
-    - [ ] `getDetailPetTour()` API 연동
-    - [ ] 반려동물 동반 가능 여부 표시
-    - [ ] 반려동물 크기 제한 정보
-    - [ ] 반려동물 입장 가능 장소 (실내/실외)
-    - [ ] 반려동물 동반 추가 요금
-    - [ ] 반려동물 전용 시설 정보
-    - [ ] 아이콘 및 뱃지 디자인 (🐾)
-    - [ ] 주의사항 강조 표시
+- [x] 반려동물 정보 섹션 (MVP 2.5)
+  - [x] `components/tour-detail/detail-pet-tour.tsx` 생성
+    - [x] `getDetailPetTour()` API 연동
+    - [x] 반려동물 동반 가능 여부 표시
+    - [x] 반려동물 크기 제한 정보
+    - [x] 반려동물 입장 가능 장소 (실내/실외)
+    - [x] 반려동물 동반 추가 요금
+    - [x] 반려동물 전용 시설 정보
+    - [x] 아이콘 및 뱃지 디자인 (🐾)
+    - [x] 주의사항 강조 표시
+  ---
+  추가 개발 사항
+  - [x] `app/places/[contentId]/page.tsx`에 반려동물 정보 섹션 통합
+    - [x] `getDetailPetTour` API 호출 추가 (병렬 처리, Promise.allSettled 사용)
+    - [x] `DetailPetTour` 컴포넌트 import 및 조건부 렌더링
+    - [x] 에러 처리 개선 (pet 정보 실패 시 다른 섹션 영향 없도록 처리)
+  - [x] `components/tour-detail/detail-pet-tour.tsx` 컴포넌트 구현
+    - [x] 실제 API 필드 우선 표시 (acmpyTypeCd, acmpyPsblCpam, acmpyNeedMtr 등)
+    - [x] 레거시 필드 fallback 처리 (chkpetsize, chkpetplace, chkpetfee 등)
+    - [x] 데이터 없을 때 섹션 숨김 처리 (hasPetData 함수)
+    - [x] 동반 가능 여부 요약 텍스트 생성 (getPetAllowedSummary 함수)
+    - [x] 아이콘 기반 정보 표시 (Dog, AlertCircle, Info, DollarSign, MapPin)
+    - [x] 주의사항 강조 박스 (금지 키워드 포함 시 amber 배경)
+    - [x] 반응형 디자인 적용 (Card 컴포넌트 사용)
+    - [x] 접근성 개선 (aria-hidden, 아이콘 설명)
+  - [x] 타입 정의 보강
+    - [x] `lib/types/tour.ts`의 `PetTourInfo` 인터페이스에 표시 우선순위 주석 추가
+    - [x] `app/places/[contentId]/page.tsx` JSDoc 주석 업데이트 (getDetailPetTour 추가)
 - [ ] 추천 관광지 섹션 (선택 사항)
   - [ ] 같은 지역 또는 타입의 다른 관광지 추천
   - [ ] 카드 형태로 표시

@@ -3,14 +3,18 @@
  * @description 관광지 상세페이지
  * 
  * 관광지 상세 정보를 표시하는 페이지입니다.
- * Phase 3 기본 정보 섹션 구현 완료 - 향후 운영정보, 이미지 갤러리, 지도 등 추가 예정
+ * Phase 3 기본 정보 섹션 구현 완료 - 운영정보, 이미지 갤러리, 지도, 반려동물 정보 포함
  *
  * 주요 기능:
  * 1. 관광지 기본 정보 표시 (DetailInfo 컴포넌트)
- * 2. 뒤로가기 버튼 (접근성 개선)
- * 3. 에러 처리 및 사용자 친화적 메시지
- * 4. 동적 Open Graph 메타태그 생성 (generateMetadata)
- * 5. 공유 기능 (ShareButton 컴포넌트)
+ * 2. 운영 정보 표시 (DetailIntro 컴포넌트)
+ * 3. 이미지 갤러리 (DetailGallery 컴포넌트)
+ * 4. 반려동물 동반 정보 (DetailPetTour 컴포넌트)
+ * 5. 지도 표시 (DetailMap 컴포넌트)
+ * 6. 뒤로가기 버튼 (접근성 개선)
+ * 7. 에러 처리 및 사용자 친화적 메시지
+ * 8. 동적 Open Graph 메타태그 생성 (generateMetadata)
+ * 9. 공유 기능 (ShareButton 컴포넌트)
  *
  * @dependencies
  * - lib/api/tour-api.ts (getDetailCommon, getDetailIntro)
@@ -25,7 +29,7 @@
  * - Next.js Metadata API (generateMetadata)
  */
 
-import { getDetailCommon, getDetailIntro } from '@/lib/api/tour-api';
+import { getDetailCommon, getDetailIntro, getDetailPetTour } from '@/lib/api/tour-api';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
@@ -36,6 +40,7 @@ import DetailInfo from '@/components/tour-detail/detail-info';
 import DetailIntro from '@/components/tour-detail/detail-intro';
 import DetailGallery from '@/components/tour-detail/detail-gallery';
 import DetailMap from '@/components/tour-detail/detail-map';
+import DetailPetTour from '@/components/tour-detail/detail-pet-tour';
 import ShareButton from '@/components/tour-detail/share-button';
 
 interface PageProps {
@@ -128,16 +133,29 @@ export default async function PlaceDetailPage({ params }: PageProps) {
     // API 호출로 상세 정보 가져오기
     const detail = await getDetailCommon({ contentId });
 
-    // 운영 정보 API 호출 (병렬 처리, 실패해도 기본 정보는 표시)
-    let intro = null;
-    try {
-      intro = await getDetailIntro({
+    // 운영 정보 및 반려동물 정보 API 호출 (병렬 처리, 실패해도 기본 정보는 표시)
+    const [intro, petInfo] = await Promise.allSettled([
+      getDetailIntro({
         contentId,
         contentTypeId: detail.contenttypeid,
-      });
-    } catch (error) {
-      // 운영 정보가 없어도 기본 정보는 표시
-      console.warn('운영 정보를 불러올 수 없습니다:', error);
+      }),
+      getDetailPetTour({ contentId }),
+    ]);
+
+    // 운영 정보 처리
+    let introData = null;
+    if (intro.status === 'fulfilled') {
+      introData = intro.value;
+    } else {
+      console.warn('운영 정보를 불러올 수 없습니다:', intro.reason);
+    }
+
+    // 반려동물 정보 처리
+    let petInfoData = null;
+    if (petInfo.status === 'fulfilled') {
+      petInfoData = petInfo.value;
+    } else {
+      console.warn('반려동물 정보를 불러올 수 없습니다:', petInfo.reason);
     }
 
     return (
@@ -163,7 +181,10 @@ export default async function PlaceDetailPage({ params }: PageProps) {
           <DetailGallery contentId={contentId} title={detail.title} />
 
           {/* 운영 정보 섹션 */}
-          {intro && <DetailIntro intro={intro} />}
+          {introData && <DetailIntro intro={introData} />}
+
+          {/* 반려동물 정보 섹션 */}
+          {petInfoData && <DetailPetTour petInfo={petInfoData} />}
 
           {/* 지도 섹션 */}
           {detail.mapx &&

@@ -72,22 +72,22 @@ export default async function Home({ searchParams }: HomeProps) {
 
   const pageNo = params.pageNo
     ? parseInt(
-        Array.isArray(params.pageNo) ? params.pageNo[0] : params.pageNo,
-        10
-      )
+      Array.isArray(params.pageNo) ? params.pageNo[0] : params.pageNo,
+      10
+    )
     : DEFAULT_FILTERS.pageNo;
 
   const petAllowed =
     params.petAllowed !== undefined
       ? (Array.isArray(params.petAllowed) ? params.petAllowed[0] : params.petAllowed) ===
-        'true'
+      'true'
       : DEFAULT_FILTERS.petAllowed ?? false;
 
   const petSizes = params.petSizes
     ? (Array.isArray(params.petSizes) ? params.petSizes[0] : params.petSizes)
-        .split(',')
-        .map((size) => size.trim())
-        .filter((size): size is PetSize => ['small', 'medium', 'large'].includes(size))
+      .split(',')
+      .map((size) => size.trim())
+      .filter((size): size is PetSize => ['small', 'medium', 'large'].includes(size))
     : DEFAULT_FILTERS.petSizes ?? [];
 
   const keyword = params.keyword
@@ -113,16 +113,22 @@ export default async function Home({ searchParams }: HomeProps) {
     // 지역 목록 가져오기
     areaCodes = await getAreaCode().catch(() => []);
 
+    // 반려동물 필터만 켜고 검색어가 없는 경우, 자동으로 '반려'로 검색 (더 많은 결과)
+    const effectiveKeyword = (shouldApplyPetFilter && !keyword) ? '반려' : keyword;
+    const isAutoPetSearch = shouldApplyPetFilter && !keyword;
+
     // 키워드 검색 모드인지 확인
-    if (keyword && keyword.length > 0) {
+    if (effectiveKeyword && effectiveKeyword.length > 0) {
       // 검색 모드: searchKeyword API 호출
       isSearchMode = true;
+      // 반려동물 필터 활성화 시 더 많은 데이터를 가져와서 필터링
+      const fetchRows = shouldApplyPetFilter ? 100 : 20;
       tourData = await searchKeyword({
-        keyword,
+        keyword: effectiveKeyword,
         areaCode: areaCode,
         contentTypeId: contentTypeId,
-        numOfRows: 20,
-        pageNo,
+        numOfRows: fetchRows,
+        pageNo: shouldApplyPetFilter ? 1 : pageNo, // 필터 시 첫 페이지부터
         arrange,
       });
     } else if (areaCode !== undefined) {
@@ -147,30 +153,46 @@ export default async function Home({ searchParams }: HomeProps) {
           arrange,
         });
       } else {
-        // 모든 지역에 대해 병렬로 API 호출
-        const allAreaPromises = areaCodes.map((area) =>
-          getAreaBasedList({
-            areaCode: area.code,
-            contentTypeId,
-            numOfRows: 20, // 각 지역당 20개씩 조회
-            pageNo: 1, // 전체 조회 시 각 지역의 첫 페이지만
-            arrange,
-          }).catch((err) => {
-            // 개별 지역 API 호출 실패 시 빈 결과 반환
-            console.error(`지역 ${area.name} (${area.code}) 조회 실패:`, err);
-            return {
-              items: [],
-              pagination: {
-                pageNo: 1,
-                numOfRows: 20,
-                totalCount: 0,
-                totalPages: 0,
-              },
-            };
-          })
-        );
+        // 배치 처리로 지역 목록 조회 (Rate Limit 방지)
+        const AREA_BATCH_SIZE = 3; // 3개씩 처리
+        const AREA_BATCH_DELAY = 2000; // 2초 대기
 
-        const allAreaResults = await Promise.all(allAreaPromises);
+        const allAreaResults: Awaited<ReturnType<typeof getAreaBasedList>>[] = [];
+
+        for (let i = 0; i < areaCodes.length; i += AREA_BATCH_SIZE) {
+          const batch = areaCodes.slice(i, i + AREA_BATCH_SIZE);
+
+          const batchResults = await Promise.all(
+            batch.map((area) =>
+              getAreaBasedList({
+                areaCode: area.code,
+                contentTypeId,
+                numOfRows: 20, // 각 지역당 20개씩 조회
+                pageNo: 1, // 전체 조회 시 각 지역의 첫 페이지만
+                arrange,
+              }).catch((err) => {
+                // 개별 지역 API 호출 실패 시 빈 결과 반환
+                console.error(`지역 ${area.name} (${area.code}) 조회 실패:`, err);
+                return {
+                  items: [],
+                  pagination: {
+                    pageNo: 1,
+                    numOfRows: 20,
+                    totalCount: 0,
+                    totalPages: 0,
+                  },
+                };
+              })
+            )
+          );
+
+          allAreaResults.push(...batchResults);
+
+          // 마지막 배치가 아니면 딜레이
+          if (i + AREA_BATCH_SIZE < areaCodes.length) {
+            await new Promise((resolve) => setTimeout(resolve, AREA_BATCH_DELAY));
+          }
+        }
 
         // 모든 지역의 결과를 병합
         const allItems = allAreaResults.flatMap((result) => result.items);
@@ -224,37 +246,105 @@ export default async function Home({ searchParams }: HomeProps) {
     const beforeCount = tourData.pagination.totalCount;
     const pageSize = tourData.pagination.numOfRows || 20;
 
+    // 검색어가 반려동물 관련 키워드인지 확인 (공백 무시)
+    const petSearchKeywords = ['반려동물', '반려견', '반려', '애완동물', '애견', '펫', 'pet'];
+    const normalizedKeyword = keyword?.replace(/\s+/g, '').toLowerCase() || '';
+    const isPetSearchMode = keyword && petSearchKeywords.some(k =>
+      normalizedKeyword.includes(k.toLowerCase().replace(/\s+/g, ''))
+    );
+
+    // 디버깅 로그
+    console.log('[pet-filter] 검색어 분석:', {
+      keyword,
+      normalizedKeyword,
+      isPetSearchMode,
+      petAllowed,
+      shouldApplyPetFilter,
+    });
+
     const itemsWithPetInfo: TourWithPetInfo[] = await Promise.all(
       tourData.items.map(async (item) => {
-        const inlinePetInfo =
-          item.chkpet ||
-          item.chkpetsize ||
-          item.chkpetplace ||
-          item.chkpetfee ||
-          item.petinfo
-            ? {
-                contentid: item.contentid,
-                contenttypeid: item.contenttypeid,
-                chkpetleash: item.chkpet,
-                chkpetsize: item.chkpetsize,
-                chkpetplace: item.chkpetplace,
-                chkpetfee: item.chkpetfee,
-                petinfo: item.petinfo,
-                parking: undefined,
-              }
-            : null;
-
-        if (inlinePetInfo) {
-          return { ...item, petInfo: inlinePetInfo };
+        // 검색어가 반려동물 관련인 경우 또는 자동 검색인 경우,
+        // 검색 결과 자체가 반려동물 관련이므로 모두 허용
+        const isAutoPetSearch = shouldApplyPetFilter && !keyword;
+        if (isPetSearchMode || isAutoPetSearch) {
+          return {
+            ...item,
+            petInfo: {
+              contentid: item.contentid,
+              contenttypeid: item.contenttypeid,
+              petinfo: `(검색 결과) ${item.title}`,
+              acmpyTypeCd: '동반가능',
+              parking: undefined,
+            },
+          };
         }
 
+        // 1. 인라인 반려동물 정보 확인 (목록 API 응답에 포함된 경우)
+        const hasInlinePetData = !!(
+          item.chkpet?.trim() ||
+          item.chkpetsize?.trim() ||
+          item.chkpetplace?.trim() ||
+          item.chkpetfee?.trim() ||
+          item.petinfo?.trim()
+        );
+
+        if (hasInlinePetData) {
+          return {
+            ...item,
+            petInfo: {
+              contentid: item.contentid,
+              contenttypeid: item.contenttypeid,
+              chkpetleash: item.chkpet,
+              chkpetsize: item.chkpetsize,
+              chkpetplace: item.chkpetplace,
+              chkpetfee: item.chkpetfee,
+              petinfo: item.petinfo,
+              parking: undefined,
+            },
+          };
+        }
+
+        // 2. detailPetTour2 API 호출
         try {
           const petInfo = await getDetailPetTour({ contentId: item.contentid });
-          return { ...item, petInfo };
+          if (petInfo) {
+            return { ...item, petInfo };
+          }
         } catch (petError) {
-          console.error(`반려동물 정보 조회 실패 (contentId: ${item.contentid})`, petError);
-          return { ...item, petInfo: null };
+          // API 호출 실패는 무시하고 다음 단계로
+          console.warn(`반려동물 API 조회 실패 (contentId: ${item.contentid}):`,
+            petError instanceof Error ? petError.message : petError);
         }
+
+        // 3. 제목이나 개요에서 반려동물 관련 텍스트 확인 (Fallback)
+        const textToCheck = [item.title, item.overview || ''].join(' ');
+        const petKeywords = ['반려동물', '반려견', '애완동물', '애견', '펫', 'pet'];
+        const allowKeywords = ['동반', '가능', '입장', '출입', '허용'];
+        const disallowKeywords = ['불가', '금지', '안됨', '없습니다'];
+
+        const lowerText = textToCheck.toLowerCase();
+        const hasPetKeyword = petKeywords.some(k => lowerText.includes(k.toLowerCase()));
+        const hasAllowKeyword = allowKeywords.some(k => lowerText.includes(k.toLowerCase()));
+        const hasDisallowKeyword = disallowKeywords.some(k => lowerText.includes(k.toLowerCase()));
+
+        // 반려동물 관련 키워드가 있고, 허용 키워드가 있고, 금지 키워드가 없으면 허용
+        if (hasPetKeyword && hasAllowKeyword && !hasDisallowKeyword) {
+          return {
+            ...item,
+            petInfo: {
+              contentid: item.contentid,
+              contenttypeid: item.contenttypeid,
+              // 텍스트에서 추출한 정보로 설정
+              petinfo: `(텍스트 기반 추정) ${textToCheck.substring(0, 100)}`,
+              acmpyTypeCd: '동반가능',
+              parking: undefined,
+            },
+          };
+        }
+
+        // 반려동물 정보 없음
+        return { ...item, petInfo: null };
       })
     );
 
@@ -285,12 +375,18 @@ export default async function Home({ searchParams }: HomeProps) {
         {/* 페이지 헤더 */}
         <div>
           <h1 className="text-3xl font-bold mb-4">
-            {isSearchMode && keyword ? `"${keyword}" 검색 결과` : '관광지 목록'}
+            {shouldApplyPetFilter && !keyword
+              ? '🐾 반려동물 동반 가능 관광지'
+              : isSearchMode && keyword
+                ? `"${keyword}" 검색 결과`
+                : '관광지 목록'}
           </h1>
           <p className="text-muted-foreground">
-            {isSearchMode && keyword
-              ? `검색 결과 ${tourData?.pagination.totalCount || 0}개`
-              : '전국의 관광지를 검색하고 탐험해보세요.'}
+            {shouldApplyPetFilter && !keyword
+              ? `반려동물과 함께 방문할 수 있는 관광지 ${tourData?.pagination.totalCount || 0}개`
+              : isSearchMode && keyword
+                ? `검색 결과 ${tourData?.pagination.totalCount || 0}개`
+                : '전국의 관광지를 검색하고 탐험해보세요.'}
           </p>
         </div>
 
