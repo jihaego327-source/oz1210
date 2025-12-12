@@ -170,36 +170,36 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
       {/* 기본 정보 섹션 (Card) */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
                 {/* 관광 타입 뱃지 */}
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2 sm:px-2.5 py-0.5 text-xs font-medium text-primary">
                   {typeName}
                 </span>
                 
                 {/* 카테고리 뱃지 */}
                 {detail.cat1 && (
-                  <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/50 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                  <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/50 px-2 sm:px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                     {detail.cat1}
                   </span>
                 )}
                 {detail.cat2 && (
-                  <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/50 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                  <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/50 px-2 sm:px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                     {detail.cat2}
                   </span>
                 )}
                 {detail.cat3 && (
-                  <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/50 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                  <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/50 px-2 sm:px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                     {detail.cat3}
                   </span>
                 )}
               </div>
-              <div className="flex items-start justify-between gap-4 mt-2">
-                <CardTitle className="text-3xl font-bold flex-1">
+              <div className="flex items-start justify-between gap-2 sm:gap-4 mt-2">
+                <CardTitle id="detail-info-title" className="text-2xl sm:text-3xl font-bold flex-1 min-w-0">
                   {detail.title}
                 </CardTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                   <BookmarkButton
                     contentId={detail.contentid}
                     title={detail.title}
@@ -212,39 +212,40 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           {/* 대표 이미지 */}
           {imageUrl ? (
             <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted">
               <Image
                 src={imageUrl}
-                alt={detail.title}
+                alt={`${detail.title} 대표 이미지`}
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 896px"
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 80vw, 896px"
                 unoptimized={imageUrl.startsWith('http') && !imageUrl.includes('data.go.kr')}
+                priority
               />
             </div>
           ) : (
             <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground">이미지 없음</p>
+              <p className="text-sm sm:text-base text-muted-foreground">이미지 없음</p>
             </div>
           )}
 
           {/* 연락처 정보 */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* 주소 */}
             {address && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2 sm:gap-3">
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <h2 className="text-lg font-semibold">주소</h2>
+                    <h2 className="text-base sm:text-lg font-semibold">주소</h2>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleCopyAddress}
-                      className="h-8 px-2"
+                      className="h-9 sm:h-10 px-2 sm:px-3 min-w-[44px] sm:min-w-[48px]"
                       aria-label="주소 복사"
                     >
                       {copied ? (
@@ -254,20 +255,20 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
                       )}
                     </Button>
                   </div>
-                  <p className="text-muted-foreground">{address}</p>
+                  <p className="text-sm sm:text-base text-muted-foreground break-words">{address}</p>
                 </div>
               </div>
             )}
 
             {/* 전화번호 */}
             {normalizedTel && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2 sm:gap-3">
                 <Phone className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold mb-1">전화번호</h2>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-base sm:text-lg font-semibold mb-1">전화번호</h2>
                   <a
                     href={`tel:${normalizedTel}`}
-                    className="text-primary hover:underline"
+                    className="text-sm sm:text-base text-primary hover:underline break-all"
                     aria-label={`${normalizedTel}로 전화하기`}
                   >
                     {normalizedTel}
@@ -278,19 +279,19 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
 
             {/* 홈페이지 */}
             {normalizedHomepage && (
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2 sm:gap-3">
                 <Globe className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold mb-1">홈페이지</h2>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-base sm:text-lg font-semibold mb-1">홈페이지</h2>
                   <a
                     href={normalizedHomepage}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline flex items-center gap-1"
+                    className="text-sm sm:text-base text-primary hover:underline flex items-center gap-1 break-all"
                     aria-label={`${detail.title} 홈페이지 열기 (새 창)`}
                   >
-                    {normalizedHomepage}
-                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    <span className="truncate">{normalizedHomepage}</span>
+                    <ExternalLink className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                   </a>
                 </div>
               </div>
@@ -303,10 +304,10 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
       {detail.overview && (
         <Card>
           <CardHeader>
-            <CardTitle>개요</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">개요</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+            <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-line leading-relaxed">
               {detail.overview}
             </p>
           </CardContent>

@@ -564,11 +564,53 @@
 - [ ] 추천 관광지 섹션 (선택 사항)
   - [ ] 같은 지역 또는 타입의 다른 관광지 추천
   - [ ] 카드 형태로 표시
-- [ ] 최종 통합 및 스타일링
-  - [ ] 모든 섹션 통합
-  - [ ] 반응형 디자인 확인
-  - [ ] 모바일 최적화
-  - [ ] 접근성 확인 (ARIA 라벨, 키보드 네비게이션)
+- [x] 최종 통합 및 스타일링
+  - [x] 모든 섹션 통합
+  - [x] 반응형 디자인 확인
+  - [x] 모바일 최적화
+  - [x] 접근성 확인 (ARIA 라벨, 키보드 네비게이션)
+  ---
+  추가 개발 사항
+  - [x] `app/places/[contentId]/page.tsx` 페이지 구조 개선
+    - [x] 시맨틱 HTML 구조 적용 (nav, main, section 요소 사용)
+    - [x] 각 섹션에 aria-labelledby 속성 추가
+    - [x] 불필요한 안내 메시지 제거 (Phase 3 완료)
+    - [x] 반응형 패딩 및 간격 개선 (py-6 sm:py-8, space-y-4 sm:space-y-6)
+    - [x] 뒤로가기 버튼 반응형 크기 조정 (h-10 sm:h-11)
+  - [x] `components/tour-detail/detail-info.tsx` 반응형 및 접근성 개선
+    - [x] 섹션 제목에 id 속성 추가 (detail-info-title)
+    - [x] 제목 크기 반응형 조정 (text-2xl sm:text-3xl)
+    - [x] 이미지 sizes 속성 최적화 (모바일/태블릿/데스크톱)
+    - [x] 텍스트 크기 반응형 조정 (text-sm sm:text-base)
+    - [x] 간격 반응형 조정 (gap-2 sm:gap-3, space-y-4 sm:space-y-6)
+    - [x] 버튼 터치 타겟 크기 개선 (min-w-[44px])
+    - [x] 텍스트 줄바꿈 처리 (break-words, min-w-0)
+  - [x] `components/tour-detail/detail-intro.tsx` 반응형 및 접근성 개선
+    - [x] 섹션 제목에 id 속성 추가 (detail-intro-title)
+    - [x] 제목 크기 반응형 조정 (text-xl sm:text-2xl)
+    - [x] 정보 항목 제목을 h3로 변경 (시맨틱 구조 개선)
+    - [x] 텍스트 크기 및 간격 반응형 조정
+    - [x] 텍스트 줄바꿈 처리 (break-words, min-w-0)
+  - [x] `components/tour-detail/detail-pet-tour.tsx` 반응형 및 접근성 개선
+    - [x] 섹션 제목에 id 속성 추가 (detail-pet-tour-title)
+    - [x] 제목 크기 반응형 조정 (text-xl sm:text-2xl)
+    - [x] 텍스트 크기 및 간격 반응형 조정
+    - [x] 텍스트 줄바꿈 처리 (break-words, min-w-0)
+  - [x] `components/tour-detail/detail-gallery.tsx` 반응형 및 접근성 개선
+    - [x] 섹션 제목에 id 속성 추가 (detail-gallery-title)
+    - [x] 제목 크기 반응형 조정 (text-xl sm:text-2xl)
+    - [x] 이미지 클릭 영역에 키보드 네비게이션 추가 (onKeyDown, role, tabIndex)
+    - [x] 이미지 클릭 영역에 aria-label 추가
+    - [x] 모달 닫기 버튼 터치 타겟 크기 개선 (min-w-[44px] min-h-[44px])
+    - [x] Esc 키로 모달 닫기 기능 추가
+    - [x] 터치 최적화 (touch-manipulation 클래스)
+  - [x] `components/tour-detail/detail-map.tsx` 반응형 및 접근성 개선
+    - [x] 섹션 제목에 id 속성 추가 (detail-map-title)
+    - [x] 제목 크기 반응형 조정 (text-xl sm:text-2xl)
+    - [x] 지도 높이 반응형 조정 (h-[300px] sm:h-[400px] md:h-[600px])
+    - [x] 지도 컨테이너에 role 및 aria-roledescription 추가
+    - [x] 좌표 정보 텍스트 크기 반응형 조정 (text-xs sm:text-sm)
+    - [x] 좌표 정보 줄바꿈 처리 (break-all)
 
 ## Phase 4: 통계 대시보드 페이지 (`/stats`)
 

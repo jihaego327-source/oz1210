@@ -91,96 +91,96 @@ export default function DetailPetTour({ petInfo }: DetailPetTourProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle id="detail-pet-tour-title" className="flex items-center gap-2 text-xl sm:text-2xl">
           <Dog className="h-5 w-5 text-primary" aria-hidden="true" />
           반려동물 동반 정보
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {/* 동반 가능 여부 요약 */}
         {summary && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Info className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">동반 가능 여부</p>
-              <p className="text-base">{summary}</p>
+              <p className="text-sm sm:text-base break-words">{summary}</p>
             </div>
           </div>
         )}
 
         {/* 동반 가능 범위 (견종/크기) */}
         {petInfo.acmpyPsblCpam && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Dog className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">동반 가능 범위</p>
-              <p className="text-base">{petInfo.acmpyPsblCpam}</p>
+              <p className="text-sm sm:text-base break-words">{petInfo.acmpyPsblCpam}</p>
             </div>
           </div>
         )}
 
         {/* 레거시: 크기 제한 (acmpyPsblCpam이 없을 때만) */}
         {!petInfo.acmpyPsblCpam && petInfo.chkpetsize && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Dog className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">크기 제한</p>
-              <p className="text-base">{petInfo.chkpetsize}</p>
+              <p className="text-sm sm:text-base break-words">{petInfo.chkpetsize}</p>
             </div>
           </div>
         )}
 
         {/* 필요한 조치 */}
         {petInfo.acmpyNeedMtr && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <AlertCircle className="h-4 w-4 mt-0.5 text-amber-500 flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">필요한 조치</p>
-              <p className="text-base">{petInfo.acmpyNeedMtr}</p>
+              <p className="text-sm sm:text-base break-words">{petInfo.acmpyNeedMtr}</p>
             </div>
           </div>
         )}
 
         {/* 입장 가능 장소 */}
         {petInfo.chkpetplace && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <MapPin className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">입장 가능 장소</p>
-              <p className="text-base">{petInfo.chkpetplace}</p>
+              <p className="text-sm sm:text-base break-words">{petInfo.chkpetplace}</p>
             </div>
           </div>
         )}
 
         {/* 추가 요금 */}
         {petInfo.chkpetfee && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <DollarSign className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">추가 요금</p>
-              <p className="text-base">{petInfo.chkpetfee}</p>
+              <p className="text-sm sm:text-base break-words">{petInfo.chkpetfee}</p>
             </div>
           </div>
         )}
 
         {/* 기타 동반 정보 */}
         {petInfo.etcAcmpyInfo && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Info className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">기타 정보</p>
-              <p className="text-base whitespace-pre-line">{petInfo.etcAcmpyInfo}</p>
+              <p className="text-sm sm:text-base whitespace-pre-line break-words">{petInfo.etcAcmpyInfo}</p>
             </div>
           </div>
         )}
 
         {/* 레거시: 기타 반려동물 정보 (etcAcmpyInfo가 없을 때만) */}
         {!petInfo.etcAcmpyInfo && petInfo.petinfo && (
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Info className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" aria-hidden="true" />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-muted-foreground mb-1">기타 정보</p>
-              <p className="text-base whitespace-pre-line">{petInfo.petinfo}</p>
+              <p className="text-sm sm:text-base whitespace-pre-line break-words">{petInfo.petinfo}</p>
             </div>
           </div>
         )}

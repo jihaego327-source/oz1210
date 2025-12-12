@@ -164,16 +164,16 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>운영 정보</CardTitle>
+        <CardTitle id="detail-intro-title" className="text-xl sm:text-2xl">운영 정보</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {/* 운영시간/개장시간 */}
         {intro.usetime && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Clock className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">운영시간</h2>
-              <p className="text-muted-foreground whitespace-pre-line">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">운영시간</h3>
+              <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-line break-words">
                 {intro.usetime}
               </p>
             </div>
@@ -182,11 +182,11 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
 
         {/* 휴무일 */}
         {intro.restdate && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Calendar className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">휴무일</h2>
-              <p className="text-muted-foreground whitespace-pre-line">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">휴무일</h3>
+              <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-line break-words">
                 {intro.restdate}
               </p>
             </div>
@@ -195,11 +195,11 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
 
         {/* 이용요금/문의처 */}
         {intro.infocenter && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Info className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">이용요금/문의처</h2>
-              <div className="text-muted-foreground whitespace-pre-line">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">이용요금/문의처</h3>
+              <div className="text-sm sm:text-base text-muted-foreground whitespace-pre-line break-words">
                 {intro.infocenter.split('\n').map((line, lineIndex) => (
                   <span key={lineIndex}>
                     {lineIndex > 0 && <br />}
@@ -213,11 +213,11 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
 
         {/* 주차 가능 여부 */}
         {intro.parking && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Car className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">주차</h2>
-              <p className="text-muted-foreground whitespace-pre-line">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">주차</h3>
+              <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-line break-words">
                 {intro.parking}
               </p>
             </div>
@@ -226,11 +226,11 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
 
         {/* 수용인원 */}
         {intro.accomcount && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Users className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">수용인원</h2>
-              <p className="text-muted-foreground">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">수용인원</h3>
+              <p className="text-sm sm:text-base text-muted-foreground break-words">
                 {intro.accomcount}
               </p>
             </div>
@@ -239,11 +239,11 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
 
         {/* 체험 프로그램 */}
         {intro.expguide && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <BookOpen className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">체험 프로그램</h2>
-              <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">체험 프로그램</h3>
+              <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-line leading-relaxed break-words">
                 {intro.expguide}
               </p>
             </div>
@@ -252,11 +252,11 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
 
         {/* 유모차 대여 여부 */}
         {intro.chkbabycarriage && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Baby className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">유모차</h2>
-              <p className="text-muted-foreground">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">유모차</h3>
+              <p className="text-sm sm:text-base text-muted-foreground break-words">
                 {intro.chkbabycarriage}
               </p>
             </div>
@@ -265,18 +265,18 @@ export default function DetailIntro({ intro }: DetailIntroProps) {
 
         {/* 반려동물 동반 가능 여부 */}
         {(intro.chkpet || intro.chkpetleash) && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-2 sm:gap-3">
             <Dog className="h-5 w-5 mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden="true" />
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">반려동물 동반</h2>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold mb-1">반려동물 동반</h3>
               <div className="space-y-1">
                 {intro.chkpet && (
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground break-words">
                     {intro.chkpet}
                   </p>
                 )}
                 {intro.chkpetleash && (
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground break-words">
                     {intro.chkpetleash}
                   </p>
                 )}

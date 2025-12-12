@@ -230,23 +230,25 @@ export default function DetailMap({ detail }: DetailMapProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle id="detail-map-title" className="flex items-center gap-2 text-xl sm:text-2xl">
           <MapPin className="h-5 w-5" aria-hidden="true" />
           위치 정보
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {/* 지도 컨테이너 */}
         <div
           ref={mapRef}
-          className="w-full h-[400px] md:h-[600px] rounded-lg overflow-hidden"
+          className="w-full h-[300px] sm:h-[400px] md:h-[600px] rounded-lg overflow-hidden"
           aria-label={`${detail.title} 위치 지도`}
+          role="application"
+          aria-roledescription="지도"
         />
 
         {/* 좌표 정보 */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
           <MapPin className="h-4 w-4" aria-hidden="true" />
-          <span>
+          <span className="break-all">
             경도: {coordinates.lng.toFixed(6)}, 위도: {coordinates.lat.toFixed(6)}
           </span>
         </div>

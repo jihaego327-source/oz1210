@@ -182,7 +182,7 @@ export default function DetailGallery({ contentId, title }: DetailGalleryProps) 
     <>
       <Card>
         <CardHeader>
-          <CardTitle>이미지 갤러리</CardTitle>
+          <CardTitle id="detail-gallery-title" className="text-xl sm:text-2xl">이미지 갤러리</CardTitle>
         </CardHeader>
         <CardContent>
           <Swiper
@@ -210,8 +210,17 @@ export default function DetailGallery({ contentId, title }: DetailGalleryProps) 
               return (
                 <SwiperSlide key={image.serialnum || index}>
                   <div
-                    className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+                    className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity touch-manipulation"
                     onClick={() => handleImageClick(index)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleImageClick(index);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${image.imgname || title} 이미지 ${index + 1} 보기`}
                   >
                     <Image
                       src={imageUrl}
@@ -237,10 +246,15 @@ export default function DetailGallery({ contentId, title }: DetailGalleryProps) 
             {/* 닫기 버튼 */}
             <button
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
-              aria-label="닫기"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  handleCloseModal();
+                }
+              }}
+              className="absolute top-4 right-4 z-50 p-3 sm:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+              aria-label="갤러리 닫기"
             >
-              <X className="h-6 w-6" />
+              <X className="h-6 w-6" aria-hidden="true" />
             </button>
 
             {/* 모달 내 Swiper */}

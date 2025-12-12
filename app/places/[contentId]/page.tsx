@@ -17,11 +17,12 @@
  * 9. 공유 기능 (ShareButton 컴포넌트)
  *
  * @dependencies
- * - lib/api/tour-api.ts (getDetailCommon, getDetailIntro)
+ * - lib/api/tour-api.ts (getDetailCommon, getDetailIntro, getDetailPetTour)
  * - components/tour-detail/detail-info.tsx
  * - components/tour-detail/detail-intro.tsx
  * - components/tour-detail/detail-gallery.tsx
  * - components/tour-detail/detail-map.tsx
+ * - components/tour-detail/detail-pet-tour.tsx
  * - components/tour-detail/share-button.tsx
  * - components/ui/button.tsx
  * - components/ui/card.tsx
@@ -159,48 +160,57 @@ export default async function PlaceDetailPage({ params }: PageProps) {
     }
 
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
         {/* 뒤로가기 버튼 */}
-        <Link href="/">
-          <Button
-            variant="ghost"
-            className="mb-6"
-            aria-label="목록으로 돌아가기"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
-            목록으로 돌아가기
-          </Button>
-        </Link>
+        <nav aria-label="페이지 네비게이션">
+          <Link href="/">
+            <Button
+              variant="ghost"
+              className="mb-4 sm:mb-6 h-10 sm:h-11 px-3 sm:px-4"
+              aria-label="목록으로 돌아가기"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+              <span className="text-sm sm:text-base">목록으로 돌아가기</span>
+            </Button>
+          </Link>
+        </nav>
 
         {/* 메인 콘텐츠 */}
-        <div className="space-y-6">
+        <main className="space-y-4 sm:space-y-6">
           {/* 기본 정보 섹션 */}
-          <DetailInfo detail={detail} />
+          <section aria-labelledby="detail-info-title">
+            <DetailInfo detail={detail} />
+          </section>
 
           {/* 이미지 갤러리 섹션 */}
-          <DetailGallery contentId={contentId} title={detail.title} />
+          <section aria-labelledby="detail-gallery-title">
+            <DetailGallery contentId={contentId} title={detail.title} />
+          </section>
 
           {/* 운영 정보 섹션 */}
-          {introData && <DetailIntro intro={introData} />}
+          {introData && (
+            <section aria-labelledby="detail-intro-title">
+              <DetailIntro intro={introData} />
+            </section>
+          )}
 
           {/* 반려동물 정보 섹션 */}
-          {petInfoData && <DetailPetTour petInfo={petInfoData} />}
+          {petInfoData && (
+            <section aria-labelledby="detail-pet-tour-title">
+              <DetailPetTour petInfo={petInfoData} />
+            </section>
+          )}
 
           {/* 지도 섹션 */}
           {detail.mapx &&
             detail.mapy &&
             detail.mapx !== '0' &&
-            detail.mapy !== '0' && <DetailMap detail={detail} />}
-
-          {/* 향후 추가 예정 섹션 안내 */}
-          <Card className="bg-muted/50">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">
-                💡 Phase 3 후속 작업에서 북마크 등 더 상세한 정보를 추가할 예정입니다.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            detail.mapy !== '0' && (
+              <section aria-labelledby="detail-map-title">
+                <DetailMap detail={detail} />
+              </section>
+            )}
+        </main>
       </div>
     );
   } catch (error) {
