@@ -190,32 +190,55 @@ export default function RegionChart({
             tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <ChartTooltip
-            content={({ active, payload }) => {
-              if (!active || !payload || payload.length === 0) {
+            content={(props) => {
+              // props가 없거나 active가 false면 null 반환
+              if (!props || !props.active || !props.payload || props.payload.length === 0) {
                 return null
               }
 
-              const data = payload[0].payload as ChartDataPoint
+              // payload[0].payload에서 ChartDataPoint 추출
+              const data = props.payload[0]?.payload as ChartDataPoint | undefined
+              if (!data) {
+                return null
+              }
+
+              // ChartTooltipContent에 모든 props 전달
               return (
-                <ChartTooltipContent>
-                  <div className="space-y-2">
-                    <div className="font-semibold">{data.label}</div>
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-muted-foreground">관광지 개수:</span>
-                      <span className="font-mono font-medium">
-                        {formatNumber(data.value)}개
-                      </span>
-                    </div>
-                    {data.percentage !== undefined && (
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="text-muted-foreground">비율:</span>
-                        <span className="font-mono font-medium">
-                          {data.percentage.toFixed(1)}%
-                        </span>
+                <ChartTooltipContent
+                  {...props}
+                  labelFormatter={(value, payload) => {
+                    // payload[0].payload에서 ChartDataPoint 추출
+                    const chartData = payload?.[0]?.payload as ChartDataPoint | undefined
+                    return chartData?.label || value || '알 수 없음'
+                  }}
+                  formatter={(value, name, item, index, payload) => {
+                    // formatter의 5번째 인자 payload는 item.payload를 의미
+                    // ChartDataPoint 타입 데이터 추출 (payload 우선, 없으면 item.payload 사용)
+                    const chartData = (payload as ChartDataPoint) || (item?.payload as ChartDataPoint)
+                    if (!chartData || chartData.value === undefined) {
+                      return null
+                    }
+
+                    return (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-muted-foreground">관광지 개수:</span>
+                          <span className="font-mono font-medium">
+                            {formatNumber(chartData.value)}개
+                          </span>
+                        </div>
+                        {chartData.percentage !== undefined && (
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-muted-foreground">비율:</span>
+                            <span className="font-mono font-medium">
+                              {chartData.percentage.toFixed(1)}%
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </ChartTooltipContent>
+                    )
+                  }}
+                />
               )
             }}
           />

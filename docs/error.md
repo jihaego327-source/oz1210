@@ -980,3 +980,229 @@ router.push(`/?contentTypeIds=${data.contentTypeId}`) // ✅ 복수형
 - **툴팁 정상화:** Donut Chart 조각에 마우스를 올리면 **타입명, 개수, 비율**이 정상적으로 표시됨.
 - **필터링 정상화:** 차트 조각을 클릭하면 메인 목록으로 이동하며, 클릭한 **해당 타입으로 정확히 필터링**된 목록이 표시됨.
 - **문제 해결 완료!** 🎉
+
+---
+
+# Bar Chart 툴팁 미표시 문제 해결 과정 (Troubleshooting Report)
+
+## 📌 1. 문제 상황 (Problem)
+
+**증상:**
+- 통계 페이지의 Bar Chart (`RegionChart`) 막대에 마우스를 올렸을 때 툴팁이 전혀 표시되지 않음
+- 지역명, 관광지 개수, 비율 등 중요한 정보를 확인할 수 없음
+- Donut Chart (`TypeChart`)는 정상 작동하지만 Bar Chart만 문제 발생
+
+**환경:**
+- **Framework:** Next.js 15 (App Router)
+- **UI Library:** shadcn/ui (Chart 컴포넌트, recharts 기반)
+- **Component:** `components/stats/region-chart.tsx`
+- **Related Component:** `components/ui/chart.tsx` (ChartTooltipContent)
+
+---
+
+## 🔍 2. 원인 분석 (Root Cause Analysis)
+
+### 최종 원인: ChartTooltipContent에 props 전달 누락 및 이중 렌더링 로직 충돌 🚨
+
+**문제 코드:**
+```typescript
+// components/stats/region-chart.tsx (이전 코드)
+<ChartTooltip
+  content={({ active, payload }) => {
+    if (!active || !payload || payload.length === 0) {
+      return null
+    }
+
+    const data = payload[0].payload as ChartDataPoint
+    return (
+      <ChartTooltipContent>  // ❌ props를 전달하지 않음
+        <div className="space-y-2">
+          <div className="font-semibold">{data.label}</div>
+          {/* ... 커스텀 내용 ... */}
+        </div>
+      </ChartTooltipContent>
+    )
+  }}
+/>
+```
+
+**원인 분석:**
+
+1. **ChartTooltipContent에 props 전달 누락:**
+   - `ChartTooltip`의 `content` prop에 전달된 함수에서 `ChartTooltipContent`를 사용하지만, `active`, `payload`, `label` props를 전달하지 않음
+   - `ChartTooltipContent`는 내부에서 `active`, `payload`를 사용하여 렌더링을 결정하는데, props가 없으면 제대로 작동하지 않음
+   - `ChartTooltipContent`의 내부 로직 (line 167): `if (!active || !payload?.length) { return null }`이 항상 `true`가 되어 툴팁이 렌더링되지 않음
+
+2. **이중 렌더링 로직 충돌:**
+   - 커스텀 함수에서 `ChartTooltipContent` 내부에 커스텀 `div`를 `children`으로 전달
+   - `ChartTooltipContent`는 자체적으로 `payload`를 기반으로 렌더링을 시도하므로 이중 처리 발생
+   - `ChartTooltipContent`는 `children`을 무시하고 내부 로직에 따라 렌더링하려고 시도
+
+3. **데이터 접근 방식 문제:**
+   - `payload[0].payload`로 접근하지만, `ChartTooltipContent` 내부에서도 `payload`를 처리하므로 데이터 구조가 맞지 않을 수 있음
+   - `formatter`의 5번째 인자 `payload`는 실제로 `item.payload`를 의미하는데, 이를 명확히 이해하지 못함
+
+**추가 발견 사항:**
+- Donut Chart (`TypeChart`)는 커스텀 `div`를 직접 반환하는 방식으로 구현되어 있어 정상 작동
+- Bar Chart는 `ChartTooltipContent`를 사용하려고 했지만 props 전달 방식이 잘못됨
+
+---
+
+## ✅ 3. 해결 방법 (Solution)
+
+### 해결 전략: ChartTooltipContent에 props 전달 + formatter 사용
+
+`ChartTooltipContent`에 `active`, `payload`, `label`을 props로 전달하고, `labelFormatter`와 `formatter`를 사용하여 커스텀 내용을 표시하도록 수정했습니다.
+
+### 코드 수정: ChartTooltip의 content prop 수정
+
+**파일:** `components/stats/region-chart.tsx`
+
+**변경 전:**
+```typescript
+<ChartTooltip
+  content={({ active, payload }) => {
+    if (!active || !payload || payload.length === 0) {
+      return null
+    }
+
+    const data = payload[0].payload as ChartDataPoint
+    return (
+      <ChartTooltipContent>  // ❌ props 전달 누락
+        <div className="space-y-2">
+          <div className="font-semibold">{data.label}</div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-muted-foreground">관광지 개수:</span>
+            <span className="font-mono font-medium">
+              {formatNumber(data.value)}개
+            </span>
+          </div>
+          {data.percentage !== undefined && (
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-muted-foreground">비율:</span>
+              <span className="font-mono font-medium">
+                {data.percentage.toFixed(1)}%
+              </span>
+            </div>
+          )}
+        </div>
+      </ChartTooltipContent>
+    )
+  }}
+/>
+```
+
+**변경 후:**
+```typescript
+<ChartTooltip
+  content={(props) => {
+    // props가 없거나 active가 false면 null 반환
+    if (!props || !props.active || !props.payload || props.payload.length === 0) {
+      return null
+    }
+
+    // payload[0].payload에서 ChartDataPoint 추출
+    const data = props.payload[0]?.payload as ChartDataPoint | undefined
+    if (!data) {
+      return null
+    }
+
+    // ChartTooltipContent에 모든 props 전달
+    return (
+      <ChartTooltipContent
+        {...props}  // ✅ active, payload, label 등 모든 props 전달
+        labelFormatter={(value, payload) => {
+          // payload[0].payload에서 ChartDataPoint 추출
+          const chartData = payload?.[0]?.payload as ChartDataPoint | undefined
+          return chartData?.label || value || '알 수 없음'
+        }}
+        formatter={(value, name, item, index, payload) => {
+          // formatter의 5번째 인자 payload는 item.payload를 의미
+          // ChartDataPoint 타입 데이터 추출 (payload 우선, 없으면 item.payload 사용)
+          const chartData = (payload as ChartDataPoint) || (item?.payload as ChartDataPoint)
+          if (!chartData || chartData.value === undefined) {
+            return null
+          }
+
+          return (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-muted-foreground">관광지 개수:</span>
+                <span className="font-mono font-medium">
+                  {formatNumber(chartData.value)}개
+                </span>
+              </div>
+              {chartData.percentage !== undefined && (
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">비율:</span>
+                  <span className="font-mono font-medium">
+                    {chartData.percentage.toFixed(1)}%
+                  </span>
+                </div>
+              )}
+            </div>
+          )
+        }}
+      />
+    )
+  }}
+/>
+```
+
+**주요 변경 사항:**
+
+1. **props 객체 전체 전달:**
+   - `content` prop의 함수 시그니처를 `({ active, payload })`에서 `(props)`로 변경
+   - `ChartTooltipContent`에 `{...props}`로 모든 props 전달 (`active`, `payload`, `label` 포함)
+
+2. **labelFormatter 구현:**
+   - 지역명을 툴팁 제목으로 표시하기 위한 `labelFormatter` 함수 추가
+   - `payload[0].payload`에서 `ChartDataPoint` 추출하여 `label` 반환
+
+3. **formatter 구현:**
+   - 관광지 개수와 비율을 커스텀 JSX로 표시하기 위한 `formatter` 함수 추가
+   - `formatter`의 5번째 인자 `payload`는 실제로 `item.payload`를 의미함을 명확히 함
+   - 데이터 유효성 검사 추가 (`chartData`와 `value` 존재 여부 확인)
+
+4. **데이터 접근 로직 개선:**
+   - `payload`와 `item.payload` 모두 확인하여 안전하게 데이터 추출
+   - Optional chaining과 타입 가드를 사용하여 안전성 향상
+
+---
+
+## 💡 4. 배운 점 (Key Takeaways)
+
+1. **shadcn/ui ChartTooltipContent의 동작 원리:**
+   - `ChartTooltipContent`는 `active`, `payload` props를 필수로 받아야 함
+   - props가 없으면 내부 조건문에서 항상 `null`을 반환하여 툴팁이 표시되지 않음
+   - `{...props}`로 모든 props를 전달해야 정상 작동함
+
+2. **formatter와 labelFormatter의 역할:**
+   - `labelFormatter`: 툴팁의 제목(라벨) 부분을 커스터마이징
+   - `formatter`: 툴팁의 내용 부분을 커스터마이징 (JSX 반환 가능)
+   - `formatter`의 5번째 인자 `payload`는 실제로 `item.payload`를 의미함
+
+3. **컴포넌트 props 전달의 중요성:**
+   - React 컴포넌트는 필요한 props를 모두 전달해야 정상 작동함
+   - 특히 라이브러리 컴포넌트는 내부 로직이 복잡하므로 props 전달이 필수적
+   - `{...props}` 스프레드 연산자를 사용하여 모든 props를 전달하는 것이 안전함
+
+4. **데이터 접근 방식의 이해:**
+   - recharts의 `payload` 구조를 정확히 이해해야 함
+   - `payload[0].payload`는 실제 차트 데이터를 의미
+   - `formatter`의 인자 순서와 의미를 정확히 파악해야 함
+
+5. **Donut Chart와 Bar Chart의 차이:**
+   - Donut Chart는 커스텀 `div`를 직접 반환하는 방식으로 구현되어 있음
+   - Bar Chart는 `ChartTooltipContent`를 사용하여 일관된 스타일 유지
+   - 두 방식 모두 유효하지만, `ChartTooltipContent` 사용 시 props 전달이 필수
+
+---
+
+## 🚀 5. 최종 결과
+
+- **툴팁 정상화:** Bar Chart의 막대에 마우스를 올리면 **지역명, 관광지 개수, 비율**이 정상적으로 표시됨
+- **일관된 스타일:** `ChartTooltipContent`를 사용하여 TypeChart와 일관된 툴팁 스타일 유지
+- **데이터 정확성:** 표시된 데이터가 실제 데이터와 일치하며, 숫자 포맷팅도 올바르게 작동
+- **안정성 향상:** 데이터 유효성 검사 추가로 에러 발생 가능성 감소
+- **문제 해결 완료!** 🎉

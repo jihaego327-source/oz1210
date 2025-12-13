@@ -32,6 +32,47 @@ import StatsSummary from '@/components/stats/stats-summary'
 import RegionChart from '@/components/stats/region-chart'
 import TypeChart from '@/components/stats/type-chart'
 import { TourApiError } from '@/lib/api/tour-api'
+import type { Metadata } from 'next'
+import { headers } from 'next/headers'
+
+/**
+ * 통계 대시보드 페이지 메타데이터 생성
+ *
+ * SEO 최적화를 위한 메타데이터를 생성합니다.
+ *
+ * @returns Next.js Metadata 객체
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers()
+  const host = headersList.get('host') || 'localhost:3000'
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+  const baseUrl = `${protocol}://${host}`
+  const url = `${baseUrl}/stats`
+
+  return {
+    title: '통계 대시보드 - My Trip',
+    description: '전국 관광지 데이터를 한눈에 확인하는 통계 대시보드. 지역별, 타입별 관광지 분포를 차트로 시각화합니다.',
+    openGraph: {
+      title: '통계 대시보드 - My Trip',
+      description: '전국 관광지 데이터를 한눈에 확인하는 통계 대시보드',
+      type: 'website',
+      url,
+      images: [
+        {
+          url: `${baseUrl}/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: 'My Trip - 통계 대시보드',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: '통계 대시보드 - My Trip',
+      description: '전국 관광지 데이터를 한눈에 확인하는 통계 대시보드',
+    },
+  }
+}
 
 export default async function StatsPage() {
   // 통계 요약 데이터 수집

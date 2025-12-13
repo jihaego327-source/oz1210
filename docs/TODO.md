@@ -685,8 +685,16 @@
     - [x] 반응형 높이 설정 (모바일 300px, 데스크톱 400px)
     - [x] X축 레이블 회전 (-45도, 긴 지역명 대비)
     - [x] 접근성 개선 (스크린 리더용 데이터 테이블 추가, aria-label)
-    - [x] `app/stats/page.tsx` 통합 (getRegionStats API 호출, RegionChart 컴포넌트 렌더링)
-    - [x] JSDoc 주석 추가 (컴포넌트, 함수 설명 및 사용 예시)
+  - [x] `app/stats/page.tsx` 통합 (getRegionStats API 호출, RegionChart 컴포넌트 렌더링)
+  - [x] JSDoc 주석 추가 (컴포넌트, 함수 설명 및 사용 예시)
+  ---
+  에러 사항 해결
+  - [x] Bar Chart 툴팁 미표시 문제 해결
+    - [x] ChartTooltipContent에 props 전달 누락 문제 해결 - ChartTooltip의 content prop에서 ChartTooltipContent에 active, payload, label props 전달
+    - [x] labelFormatter 구현 - 지역명을 표시하기 위한 labelFormatter 함수 추가
+    - [x] formatter 구현 - 관광지 개수와 비율을 표시하기 위한 formatter 함수 추가
+    - [x] 데이터 접근 로직 개선 - payload[0].payload에서 ChartDataPoint 타입 데이터 안전하게 추출
+    - [x] 데이터 유효성 검사 추가 - payload와 data 존재 여부 확인
 - [x] 타입별 분포 차트 (Donut Chart)
   - [x] `components/stats/type-chart.tsx` 생성
     - [x] shadcn/ui Chart 컴포넌트 설치 (Pie/Donut)
@@ -728,8 +736,12 @@
     - [x] 지역별 분포 차트 (중단)
     - [x] 타입별 분포 차트 (하단)
   - [x] 에러 처리 (에러 메시지 + 재시도 버튼)
-  - [ ] 네비게이션에 통계 페이지 링크 추가
-  - [ ] 최종 페이지 확인
+  - [x] 네비게이션에 통계 페이지 링크 추가
+  - [x] 최종 페이지 확인
+  ---
+  추가 개발 사항
+  - [x] `generateMetadata` 함수 추가 - SEO 최적화를 위한 메타데이터 생성 (title, description, Open Graph, Twitter Card)
+  - [x] 네비게이션 링크 확인 - `components/Navbar.tsx`에 통계 링크 이미 구현되어 있음 확인 (데스크톱/모바일 모두 지원)
 
 ## Phase 5: 북마크 페이지 (`/bookmarks`) - 선택 사항
 
