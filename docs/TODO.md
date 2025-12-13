@@ -619,22 +619,30 @@
     - [x] 기본 레이아웃 구조
     - [x] 반응형 레이아웃 설정 (모바일 우선)
     - [x] Server Component로 구현
-- [ ] 통계 데이터 수집
-  - [ ] `lib/api/stats-api.ts` 생성
-    - [ ] `getRegionStats()` - 지역별 관광지 개수 집계
-      - [ ] `areaBasedList2` API로 각 지역별 totalCount 조회
-      - [ ] 지역 코드별로 API 호출
-    - [ ] `getTypeStats()` - 타입별 관광지 개수 집계
-      - [ ] `areaBasedList2` API로 각 타입별 totalCount 조회
-      - [ ] contentTypeId별로 API 호출
-    - [ ] `getStatsSummary()` - 전체 통계 요약
-      - [ ] 전체 관광지 수
-      - [ ] Top 3 지역
-      - [ ] Top 3 타입
-      - [ ] 마지막 업데이트 시간
-    - [ ] 병렬 API 호출로 성능 최적화
-    - [ ] 에러 처리 및 재시도 로직
-    - [ ] 데이터 캐싱 (revalidate: 3600)
+- [x] 통계 데이터 수집
+  - [x] `lib/api/stats-api.ts` 생성
+    - [x] `getRegionStats()` - 지역별 관광지 개수 집계
+      - [x] `areaBasedList2` API로 각 지역별 totalCount 조회
+      - [x] 지역 코드별로 API 호출
+    - [x] `getTypeStats()` - 타입별 관광지 개수 집계
+      - [x] `areaBasedList2` API로 각 타입별 totalCount 조회
+      - [x] contentTypeId별로 API 호출
+    - [x] `getStatsSummary()` - 전체 통계 요약
+      - [x] 전체 관광지 수
+      - [x] Top 3 지역
+      - [x] Top 3 타입
+      - [x] 마지막 업데이트 시간
+    - [x] 병렬 API 호출로 성능 최적화
+    - [x] 에러 처리 및 재시도 로직
+    - [x] 데이터 캐싱 (revalidate: 3600)
+    ---
+    추가 개발 사항
+    - [x] Next.js `unstable_cache`를 사용한 캐싱 구현 (revalidate: 3600, tags 사용)
+    - [x] 내부 함수와 공개 함수 분리 (캐싱 적용을 위한 구조)
+    - [x] 지역별 통계: 각 지역별로 모든 타입을 합산하여 전체 개수 계산
+    - [x] 타입별 통계: 각 타입별로 모든 지역을 합산하여 전체 개수 계산
+    - [x] Promise.allSettled를 사용한 부분 실패 처리 (일부 지역/타입 실패 시에도 나머지 데이터 반환)
+    - [x] 에러 발생 시 console.warn으로 로깅하고 0으로 처리
 - [ ] 통계 요약 카드
   - [ ] `components/stats/stats-summary.tsx` 생성
     - [ ] 전체 관광지 수 표시
