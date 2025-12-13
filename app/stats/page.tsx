@@ -6,26 +6,46 @@
  *
  * 주요 기능 (Phase 4에서 단계별 구현):
  * 1. 페이지 기본 구조 (Phase 4.1) ✅
- * 2. 통계 데이터 수집 (Phase 4.2) - 향후 구현
- * 3. 통계 요약 카드 (Phase 4.3) - 향후 구현
+ * 2. 통계 데이터 수집 (Phase 4.2) ✅
+ * 3. 통계 요약 카드 (Phase 4.3) ✅
  * 4. 지역별 분포 차트 (Phase 4.4) - 향후 구현
  * 5. 타입별 분포 차트 (Phase 4.5) - 향후 구현
  *
  * 현재 구현:
  * - 기본 레이아웃 구조 (시맨틱 HTML)
  * - 반응형 디자인 (모바일 우선)
- * - 섹션 구조 준비 (통계 요약, 지역별 차트, 타입별 차트)
+ * - 통계 요약 카드 (전체 관광지 수, Top 3 지역, Top 3 타입)
+ * - 섹션 구조 준비 (지역별 차트, 타입별 차트)
  *
  * @dependencies
  * - Next.js App Router (Server Component)
+ * - lib/api/stats-api.ts (getStatsSummary)
+ * - components/stats/stats-summary.tsx
  * - Tailwind CSS v4
- * - 향후: lib/api/stats-api.ts
- * - 향후: components/stats/stats-summary.tsx
  * - 향후: components/stats/region-chart.tsx
  * - 향후: components/stats/type-chart.tsx
  */
 
+import { getStatsSummary } from '@/lib/api/stats-api'
+import StatsSummary from '@/components/stats/stats-summary'
+import { TourApiError } from '@/lib/api/tour-api'
+
 export default async function StatsPage() {
+  // 통계 요약 데이터 수집
+  let summaryData = null
+  let errorMessage: string | null = null
+
+  try {
+    summaryData = await getStatsSummary()
+  } catch (error) {
+    console.error('통계 요약 데이터 수집 실패:', error)
+    if (error instanceof TourApiError) {
+      errorMessage = error.message
+    } else {
+      errorMessage =
+        '통계 데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }
+  }
   return (
     <main className="flex-1">
       <div className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
@@ -56,14 +76,7 @@ export default async function StatsPage() {
             >
               통계 요약
             </h2>
-            <div className="text-center text-muted-foreground">
-              <p className="text-sm sm:text-base">
-                통계 요약 카드가 여기에 표시됩니다.
-              </p>
-              <p className="mt-2 text-xs sm:text-sm">
-                (Phase 4.3에서 구현 예정)
-              </p>
-            </div>
+            <StatsSummary data={summaryData} error={errorMessage} />
           </section>
 
           {/* 지역별 분포 차트 섹션 */}

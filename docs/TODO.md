@@ -643,14 +643,24 @@
     - [x] 타입별 통계: 각 타입별로 모든 지역을 합산하여 전체 개수 계산
     - [x] Promise.allSettled를 사용한 부분 실패 처리 (일부 지역/타입 실패 시에도 나머지 데이터 반환)
     - [x] 에러 발생 시 console.warn으로 로깅하고 0으로 처리
-- [ ] 통계 요약 카드
-  - [ ] `components/stats/stats-summary.tsx` 생성
-    - [ ] 전체 관광지 수 표시
-    - [ ] Top 3 지역 표시 (카드 형태)
-    - [ ] Top 3 타입 표시 (카드 형태)
-    - [ ] 마지막 업데이트 시간 표시
-    - [ ] 로딩 상태 (Skeleton UI)
-    - [ ] 카드 레이아웃 디자인
+- [x] 통계 요약 카드
+  - [x] `components/stats/stats-summary.tsx` 생성
+    - [x] 전체 관광지 수 표시
+    - [x] Top 3 지역 표시 (카드 형태)
+    - [x] Top 3 타입 표시 (카드 형태)
+    - [x] 마지막 업데이트 시간 표시
+    - [x] 로딩 상태 (Skeleton UI)
+    - [x] 카드 레이아웃 디자인
+    ---
+    추가 개발 사항
+    - [x] 날짜 포맷팅 유틸리티 함수 추가 (`lib/utils.ts`에 `formatKoreanDateTime` 함수 추가)
+    - [x] 숫자 포맷팅 함수 추가 (천 단위 구분, `Intl.NumberFormat` 사용)
+    - [x] 순위별 색상 구분 (1위: primary, 2위: secondary, 3위: muted)
+    - [x] 아이콘 통합 (BarChart3, MapPin, Tag, Trophy, Clock)
+    - [x] 반응형 그리드 레이아웃 (모바일 1열, 태블릿 2열, 데스크톱 3열)
+    - [x] 에러 처리 개선 (에러 메시지 표시)
+    - [x] `app/stats/page.tsx` 통합 (getStatsSummary API 호출, StatsSummary 컴포넌트 렌더링)
+    - [x] JSDoc 주석 추가 (컴포넌트, 함수 설명 및 사용 예시)
 - [ ] 지역별 분포 차트 (Bar Chart)
   - [ ] `components/stats/region-chart.tsx` 생성
     - [ ] shadcn/ui Chart 컴포넌트 설치 (Bar)
