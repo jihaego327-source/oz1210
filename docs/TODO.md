@@ -687,24 +687,47 @@
     - [x] 접근성 개선 (스크린 리더용 데이터 테이블 추가, aria-label)
     - [x] `app/stats/page.tsx` 통합 (getRegionStats API 호출, RegionChart 컴포넌트 렌더링)
     - [x] JSDoc 주석 추가 (컴포넌트, 함수 설명 및 사용 예시)
-- [ ] 타입별 분포 차트 (Donut Chart)
-  - [ ] `components/stats/type-chart.tsx` 생성
-    - [ ] shadcn/ui Chart 컴포넌트 설치 (Pie/Donut)
-    - [ ] recharts 기반 Donut Chart 구현
-    - [ ] 타입별 비율 (백분율)
-    - [ ] 타입별 개수 표시
-    - [ ] 섹션 클릭 시 해당 타입 목록 페이지로 이동
-    - [ ] 호버 시 타입명, 개수, 비율 표시
-    - [ ] 다크/라이트 모드 지원
-    - [ ] 반응형 디자인
-    - [ ] 로딩 상태
-    - [ ] 접근성 (ARIA 라벨)
-- [ ] 페이지 통합
-  - [ ] `app/stats/page.tsx`에 모든 컴포넌트 통합
-    - [ ] 통계 요약 카드 (상단)
-    - [ ] 지역별 분포 차트 (중단)
-    - [ ] 타입별 분포 차트 (하단)
-  - [ ] 에러 처리 (에러 메시지 + 재시도 버튼)
+- [x] 타입별 분포 차트 (Donut Chart)
+  - [x] `components/stats/type-chart.tsx` 생성
+    - [x] shadcn/ui Chart 컴포넌트 설치 (Pie/Donut)
+    - [x] recharts 기반 Donut Chart 구현
+    - [x] 타입별 비율 (백분율)
+    - [x] 타입별 개수 표시
+    - [x] 섹션 클릭 시 해당 타입 목록 페이지로 이동
+    - [x] 호버 시 타입명, 개수, 비율 표시
+    - [x] 다크/라이트 모드 지원
+    - [x] 반응형 디자인
+    - [x] 로딩 상태
+    - [x] 접근성 (ARIA 라벨)
+  ---
+  추가 개발 사항
+  - [x] `transformTypeStatsToChartData` 함수 구현 - TypeStats[] → DonutChartDataPoint[] 변환
+  - [x] 차트 색상 매핑 구현 - chart-1 ~ chart-8 CSS 변수 사용 (순환)
+  - [x] Donut Chart 스타일링 - innerRadius 60%, outerRadius 90%, paddingAngle 2, startAngle 90, endAngle -270
+  - [x] ChartTooltipContent 커스터마이징 - 타입명, 개수(천 단위 구분), 비율(백분율) 표시
+  - [x] 섹션 클릭 핸들러 구현 - `/?contentTypeId={contentTypeId}`로 이동
+  - [x] 로딩 상태 (Skeleton UI) 구현 - TypeChartSkeleton 컴포넌트
+  - [x] 에러 처리 구현 - 에러 메시지 표시
+  - [x] 접근성 개선 - ARIA 라벨, 스크린 리더용 데이터 테이블 (sr-only)
+  - [x] 숫자 포맷팅 함수 추가 - Intl.NumberFormat 사용 (천 단위 구분)
+  - [x] 아이콘 통합 - Tag 아이콘 사용 (lucide-react)
+  - [x] 반응형 높이 설정 - 모바일 300px, 데스크톱 400px
+  - [x] JSDoc 주석 추가 - 컴포넌트, 함수 설명 및 사용 예시
+  - [x] `app/stats/page.tsx` 통합 - getTypeStats API 호출, TypeChart 컴포넌트 렌더링, 에러 처리
+  ---
+  에러 사항 해결
+  - [x] 툴팁 미표시 문제 해결
+    - [x] PieChart의 payload 구조 차이 해결 - payload[0].payload가 없을 경우 payload[0] 직접 사용
+    - [x] 데이터 접근 경로 수정 - payloadItem.payload || payloadItem 패턴으로 안전한 접근
+    - [x] 데이터 유효성 검사 추가 - payloadItem과 data 존재 여부 확인, name/value 필드 검증
+    - [x] 타입 안정성 개선 - optional chaining 사용, 안전한 필드 접근, null 체크
+    - [x] ChartTooltip content 함수 수정 - PieChart의 payload 구조에 맞게 데이터 추출 로직 개선
+- [x] 페이지 통합
+  - [x] `app/stats/page.tsx`에 모든 컴포넌트 통합
+    - [x] 통계 요약 카드 (상단)
+    - [x] 지역별 분포 차트 (중단)
+    - [x] 타입별 분포 차트 (하단)
+  - [x] 에러 처리 (에러 메시지 + 재시도 버튼)
   - [ ] 네비게이션에 통계 페이지 링크 추가
   - [ ] 최종 페이지 확인
 

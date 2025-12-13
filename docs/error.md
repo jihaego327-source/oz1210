@@ -707,7 +707,7 @@ const normalizeHomepageUrl = (url: string | undefined): string | null => {
     // 유효하지 않은 URL이면 null 반환
     return null;
   }
-};
+  };
 ```
 
 **주요 변경 사항:**
@@ -767,361 +767,216 @@ const normalizeHomepageUrl = (url: string | undefined): string | null => {
 
 ## 🔍 2. 원인 분석 (Root Cause Analysis)
 
-### 최종 원인: Next.js Image의 `fill` 속성과 Swiper 높이 계산의 순환 참조 🚨
+### 최종 원인: Next.js Image의 `fill` 속성과 Swiper 높이 계산의 순환 참조 및 스타일 충돌 🚨
 
 **문제 코드:**
-```typescript
+```tsx
 // 모달 내 Swiper
 <SwiperSlide>
-  <div className="relative w-full h-full min-h-[90vh] flex items-center justify-center">
+  <div className="relative w-full h-full">
     <Image
       src={imageUrl}
-      alt={...}
-      fill  // ❌ 부모 컨테이너의 크기에 의존
-      className="object-contain"
+      fill  // ❌ 부모 컨테이너 크기 필요
+      className="object-contain" // ❌ Swiper 높이 계산 불가
     />
   </div>
 </SwiperSlide>
 ```
 
 **원인:**
-1. **Next.js Image의 `fill` 속성 제약:**
-   - `fill` 속성은 부모 컨테이너가 `position: relative`이고 **명시적인 크기(너비와 높이)**를 가져야 작동함
-   - 부모의 크기가 0이면 이미지가 표시되지 않음
+1. **Next.js Image `fill` 속성과 Swiper 충돌:**
+   - `fill` 속성은 부모 컨테이너의 명시적인 높이를 필요로 함
+   - Swiper는 자식 콘텐츠의 높이에 따라 자신의 높이를 계산하려고 함
+   - 순환 참조로 인해 높이가 0이 되어 보이지 않음
 
-2. **Swiper 높이 계산 문제:**
-   - Swiper는 슬라이드 내용에 따라 높이를 자동으로 계산함
-   - 하지만 Next.js Image의 `fill` 속성을 사용하면 이미지가 부모 크기에 의존하므로 순환 참조 발생
-   - 이미지는 부모 크기를 기다리고, 부모(Swiper)는 이미지 크기를 기다리는 상황
-
-3. **DialogContent 스타일 충돌:**
-   - DialogContent의 기본 스타일(`grid` 레이아웃)이 커스텀 스타일과 충돌
-   - `!important`를 사용해도 모든 기본 스타일을 완전히 오버라이드하지 못함
-
-4. **타이밍 문제:**
-   - 모달이 열릴 때 Swiper가 아직 높이를 계산하기 전에 이미지가 렌더링되려고 시도
-   - `h-full`은 부모의 높이를 상속받는데, 부모(Swiper)의 높이가 아직 계산되지 않았으면 0이 됨
+2. **DialogContent 스타일 충돌:**
+   - `DialogContent`는 기본적으로 `grid` 레이아웃과 `max-width`를 가짐
+   - 전체 화면 갤러리를 위해 이를 오버라이드해야 했으나 `!important` 없이는 적용되지 않음
 
 ---
 
 ## ✅ 3. 해결 방법 (Solution)
 
-### 해결 전략: 일반 `<img>` 태그 사용
+### 해결 전략: Dialog 스타일 강제 오버라이드 및 img 태그 사용
 
-Next.js Image의 복잡한 제약을 피하고, 모달에서는 이미지 최적화가 덜 중요하므로 일반 `<img>` 태그를 사용했습니다.
+Next.js `Image` 컴포넌트의 `fill` 속성 대신 네이티브 `img` 태그를 사용하여 원본 비율을 유지하면서 화면에 맞게 표시하도록 변경했습니다. 또한 `DialogContent`의 스타일을 강제로 덮어씌워 전체 화면 레이아웃을 구현했습니다.
 
-### 1단계: 모달 내 이미지를 일반 img 태그로 변경
+### 1단계: DialogContent 스타일 오버라이드
 
 **파일:** `components/tour-detail/detail-gallery.tsx`
 
-**변경 전:**
-```typescript
-<SwiperSlide>
-  <div className="relative w-full h-full min-h-[90vh] flex items-center justify-center">
-    <Image
-      src={imageUrl}
-      alt={...}
-      fill
-      className="object-contain"
-      sizes="100vw"
-      unoptimized={...}
-    />
-  </div>
-</SwiperSlide>
-```
-
-**변경 후:**
-```typescript
-<SwiperSlide>
-  <div className="w-full h-full flex items-center justify-center p-4">
-    <img
-      src={imageUrl}
-      alt={...}
-      className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
-      onError={(e) => {
-        console.error('[DetailGallery] 이미지 로딩 실패:', imageUrl);
-        const target = e.target as HTMLImageElement;
-        target.style.display = 'none';
-      }}
-    />
-  </div>
-</SwiperSlide>
-```
-
-**주요 변경 사항:**
-- Next.js Image 컴포넌트 제거
-- 일반 `<img>` 태그 사용
-- `fill` 속성 제거
-- `max-w-full max-h-[90vh]` 클래스로 반응형 크기 설정
-- `object-contain`으로 이미지 비율 유지
-- `onError` 핸들러로 이미지 로딩 실패 처리
-
-### 2단계: DialogContent 스타일 개선
-
-**변경 전:**
-```typescript
-<DialogContent className="!max-w-none !p-0 !rounded-none !bg-black/95 !fixed !inset-0 ...">
-```
-
-**변경 후:**
-```typescript
+**코드:**
+```tsx
 <DialogContent className="!max-w-none !p-0 !rounded-none !bg-black/95 !fixed !inset-0 !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 !grid-none !block z-50 w-full h-full border-none [&>button]:hidden">
 ```
+- `!important` 접두사(`!`)를 사용하여 shadcn/ui 기본 스타일을 모두 무력화
+- `!grid-none !block`: Grid 레이아웃 해제
+- `!inset-0`: 전체 화면(full screen) 보장
+- `[&>button]:hidden`: 기본 닫기 버튼 숨김 (커스텀 닫기 버튼 사용)
 
-**주요 변경 사항:**
-- `!grid-none !block` 추가하여 grid 레이아웃 제거
-- 모든 위치 속성 명시적으로 오버라이드 (`!top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0`)
+### 2단계: Swiper 내부 이미지 렌더링 방식 변경
 
-### 3단계: Swiper 컨테이너 구조 단순화
+**변경 전 (Next.js Image + fill):**
+```tsx
+<div className="relative w-full h-full">
+  <Image src={imageUrl} fill className="object-contain" />
+</div>
+```
 
-**변경 사항:**
-- SwiperSlide 내부 div에서 `relative`, `min-h-[90vh]` 제거
-- Flexbox로 중앙 정렬 (`flex items-center justify-center`)
-- `p-4` 추가하여 패딩 설정
+**변경 후 (Native img):**
+```tsx
+<div className="w-full h-full flex items-center justify-center p-4">
+  <img
+    src={imageUrl}
+    alt={...}
+    className="max-w-full max-h-[90vh] w-auto h-auto object-contain"
+  />
+</div>
+```
+- 네이티브 `img` 태그 사용으로 `fill` 속성과 부모 높이 의존성 제거
+- `max-w-full max-h-[90vh]`로 화면 내에 들어오도록 크기 제한
+- `w-auto h-auto`로 원본 비율 유지
+- `object-contain`으로 이미지가 잘리지 않도록 함
 
 ---
 
 ## 💡 4. 배운 점 (Key Takeaways)
 
-1. **Next.js Image의 `fill` 속성 제약사항:**
-   - `fill` 속성은 부모가 `position: relative`이고 명시적인 크기를 가져야 함
-   - 부모의 크기가 0이면 이미지가 표시되지 않음
-   - Swiper처럼 동적으로 높이를 계산하는 컨테이너와 함께 사용하기 어려움
+1. **Next.js Image와 Swiper의 호환성:**
+   - `fill` 속성을 가진 Next.js Image는 부모 높이가 명확해야 함
+   - Swiper는 자식 콘텐츠 높이에 따라 크기가 결정됨 (기본적으로)
+   - 이 둘을 함께 쓰면 크기 계산 순환 참조가 발생하여 0x0이 되기 쉬움
+   - 전체 화면 갤러리처럼 동적 크기에서는 네이티브 `img` 태그가 더 다루기 쉬움
 
-2. **일반 img 태그 사용의 장점:**
-   - 즉시 작동, 복잡한 제약 없음
-   - 모달에서는 이미지 최적화가 덜 중요함 (이미 갤러리에서 로드됨)
-   - 반응형 크기 조정이 간단함 (`max-w-full max-h-[90vh]`)
-
-3. **DialogContent 스타일 오버라이드:**
-   - `cn()` 함수는 클래스를 병합하므로 `!important`가 필요할 수 있음
-   - `grid` 레이아웃이 남아있으면 레이아웃이 깨질 수 있음
-   - 모든 기본 스타일을 명시적으로 오버라이드해야 함
-
-4. **순환 참조 문제:**
-   - 이미지가 부모 크기에 의존하고, 부모가 이미지 크기에 의존하면 순환 참조 발생
-   - 이런 경우 일반 `<img>` 태그처럼 독립적인 크기를 가지는 요소를 사용하는 것이 해결책
+2. **shadcn/ui Dialog 커스터마이징:**
+   - 기본적으로 모달 대화상자용이라 전체 화면 갤러리용으로는 스타일 충돌이 많음
+   - Tailwind의 `!`(important) modifier를 사용하여 기본 스타일을 강력하게 덮어써야 할 때가 있음
+   - 특히 `grid` 스타일과 `max-width` 제한을 해제하는 것이 핵심
 
 ---
 
 ## 🚀 5. 최종 결과
 
-- 이미지 클릭 시 모달이 열리고 이미지가 정상적으로 표시됨
-- 모달 내부에 이미지가 중앙에 정렬되어 표시됨
-- 이미지 크기가 화면에 맞게 조정됨 (비율 유지)
-- 이전/다음 버튼으로 이미지 이동 가능
-- 모달 닫기 정상 작동
-- 이미지 로딩 실패 시 에러 처리
+- 이미지를 클릭하면 검은 화면이 아닌 실제 이미지가 보임
+- 이미지가 화면 크기에 맞춰 비율을 유지하며 표시됨
+- 전체 화면 모달이 정상적으로 작동함
 - **문제 해결 완료!** 🎉
 
 ---
 
-# 반려동물 동반 가능 토글 필터 오작동 해결 과정 (Troubleshooting Report)
+# Donut Chart 툴팁 미표시 및 필터링 오작동 해결 과정 (Troubleshooting Report)
 
 ## 📌 1. 문제 상황 (Problem)
 
-**증상:**
-- 반려동물 토글을 켜면 3개 장소만 표시됨 (실제로는 38개 이상 존재)
-- "반려동물" 검색 시 38개가 나오지만, 토글을 켜면 3개로 줄어듦
-- 반려동물과 관련 없는 장소가 필터를 통과하는 경우도 있음
+**증상 1 - 툴팁 미표시:**
+- 통계 페이지의 Donut Chart (`TypeChart`) 조각에 마우스를 올렸을 때 툴팁이 뜨긴 하지만 내용이 비어있음.
+- 타입명, 개수, 비율 등 중요한 정보가 표시되지 않음.
+
+**증상 2 - 클릭 시 필터링 실패:**
+- Donut Chart의 조각(특정 타입을 나타냄)을 클릭하면 메인 목록 페이지로 이동함.
+- 하지만 선택한 타입으로 필터링되지 않고 "전체 목록"이 표시됨.
+- 필터가 적용되지 않은 상태로 이동됨.
 
 **환경:**
 - **Framework:** Next.js 15 (App Router)
-- **관련 파일:**
-  - `app/page.tsx` - 메인 페이지 로직
-  - `lib/utils/pet-filter.ts` - 필터링 유틸리티
-  - `lib/api/tour-api.ts` - API 호출
-  - `lib/types/tour.ts` - 타입 정의
+- **UI Library:** shadcn/ui (Chart 컴포넌트, recharts 기반)
+- **Component:** `components/stats/type-chart.tsx`
+- **Related Component:** `components/tour-filters.tsx`
 
 ---
 
 ## 🔍 2. 원인 분석 (Root Cause Analysis)
 
-### 문제 1: `detailPetTour2` API 데이터 제한 🚨
+### 문제 1: shadcn/ui `ChartTooltipContent`의 동작 방식 오해
+- **원인:**
+  - `ChartTooltipContent` 컴포넌트는 `shadcn/ui`에서 제공하는 recharts 툴팁 래퍼임.
+  - 이 컴포넌트는 내부적으로 `payload` 데이터를 기반으로 내용을 자동 렌더링하도록 설계되어 있음.
+  - 하지만 우리는 커스텀 레이아웃(타입명, 개수, 비율)을 표시하기 위해 `ChartTooltipContent` 내부에 `children`으로 `div`와 텍스트를 전달했음.
+  - `ChartTooltipContent`는 전달받은 `children`을 렌더링하지 않고 무시함. 결과적으로 빈 툴팁이 표시됨.
 
-**원인:**
-- 반려동물 필터는 `detailPetTour2` API를 호출하여 각 관광지의 반려동물 정보를 조회
-- 하지만 대부분의 관광지는 이 API에 등록되어 있지 않음 (`null` 반환)
-- 결과적으로 API에 등록된 3개 장소만 필터를 통과
-
-```typescript
-// 문제의 흐름
-tourData.items.map(async (item) => {
-  const petInfo = await getDetailPetTour({ contentId: item.contentid });
-  // 대부분 null 반환 → 필터링됨
-  return { ...item, petInfo };
-});
-```
-
-### 문제 2: 페이지네이션 제한 🚨
-
-**원인:**
-- API에서 페이지당 20개씩만 데이터를 가져옴
-- 첫 페이지 20개만 필터링되고, 나머지는 처리되지 않음
-
-```
-total: 20,        ← 현재 페이지에 20개 아이템만
-beforeCount: 38   ← 전체는 38개인데 20개만 처리
-```
-
-### 문제 3: 검색어 공백 처리 누락 🚨
-
-**원인:**
-- 사용자가 "반려 동물"(공백 포함)로 검색하면 인식 실패
-- `isPetSearchMode` 체크에서 "반려동물"(공백 없음)만 확인
-
-```typescript
-// 문제 코드
-const petSearchKeywords = ['반려동물', '반려견', ...];
-// "반려 동물"은 매칭되지 않음!
-```
-
-### 문제 4: 검색어 없이 토글만 켜면 작동 안 함 🚨
-
-**원인:**
-- 토글을 켤 때 자동 검색 로직이 없음
-- `keyword`가 없으면 일반 목록 조회 → `petInfo`가 null인 항목이 대부분
+### 문제 2: URL 쿼리 파라미터 이름 불일치
+- **원인:**
+  - `TypeChart` 컴포넌트에서는 클릭 시 이동할 URL을 다음과 같이 생성함:
+    ```typescript
+    router.push(`/?contentTypeId=${data.contentTypeId}`) // 단수형 'Id'
+    ```
+  - 하지만 메인 페이지(`app/page.tsx`)와 필터 컴포넌트(`components/tour-filters.tsx`)는 다음과 같이 **복수형** 파라미터를 기대함:
+    ```typescript
+    const currentContentTypeIds = searchParams.get('contentTypeIds'); // 복수형 'Ids'
+    ```
+  - 파라미터 이름이 `contentTypeId`로 전달되니, 메인 페이지에서는 이를 인식하지 못하고(`undefined`), 기본값인 "전체 목록"을 보여줌.
 
 ---
 
 ## ✅ 3. 해결 방법 (Solution)
 
-### 1단계: 검색 결과 기반 필터링
+### 해결 1: 커스텀 툴팁 구현 (Wrapper 교체)
+`ChartTooltipContent` 대신 동일한 스타일을 가진 일반 `div` 태그를 사용하여 커스텀 내용을 직접 렌더링했습니다.
 
-**파일:** `app/page.tsx`
-
-"반려" 키워드로 검색한 결과는 이미 반려동물 관련 장소이므로, 검색 결과 자체를 반려동물 관련으로 간주합니다.
-
-```typescript
-// 변경 후
-if (isPetSearchMode || isAutoPetSearch) {
-  return {
-    ...item,
-    petInfo: {
-      contentid: item.contentid,
-      contenttypeid: item.contenttypeid,
-      petinfo: `(검색 결과) ${item.title}`,
-      acmpyTypeCd: '동반가능',
-      parking: undefined,
-    },
-  };
-}
-```
-
-### 2단계: 토글 시 자동 검색
-
-**파일:** `app/page.tsx`
-
-토글만 켜도 자동으로 "반려" 키워드로 검색하도록 수정합니다.
-
-```typescript
-// 반려동물 필터만 켜고 검색어가 없는 경우, 자동으로 '반려'로 검색
-const effectiveKeyword = (shouldApplyPetFilter && !keyword) ? '반려' : keyword;
-const isAutoPetSearch = shouldApplyPetFilter && !keyword;
-```
-
-### 3단계: 더 많은 데이터 가져오기
-
-**파일:** `app/page.tsx`
-
-반려동물 필터 활성화 시 100개씩 데이터를 가져와서 필터링합니다.
-
-```typescript
-// 반려동물 필터 활성화 시 더 많은 데이터를 가져와서 필터링
-const fetchRows = shouldApplyPetFilter ? 100 : 20;
-tourData = await searchKeyword({
-  keyword: effectiveKeyword,
-  numOfRows: fetchRows,
-  pageNo: shouldApplyPetFilter ? 1 : pageNo,
-  // ...
-});
-```
-
-### 4단계: 검색어 공백 처리
-
-**파일:** `app/page.tsx`
-
-검색어에서 공백을 제거하고 비교하도록 수정합니다.
-
-```typescript
-// 검색어가 반려동물 관련 키워드인지 확인 (공백 무시)
-const petSearchKeywords = ['반려동물', '반려견', '반려', '애완동물', '애견', '펫', 'pet'];
-const normalizedKeyword = keyword?.replace(/\s+/g, '').toLowerCase() || '';
-const isPetSearchMode = keyword && petSearchKeywords.some(k =>
-  normalizedKeyword.includes(k.toLowerCase().replace(/\s+/g, ''))
-);
-```
-
-### 5단계: 페이지 헤더 업데이트
-
-**파일:** `app/page.tsx`
-
-자동 검색일 때 적절한 헤더 메시지를 표시합니다.
-
+**변경 전:**
 ```tsx
-<h1 className="text-3xl font-bold mb-4">
-  {shouldApplyPetFilter && !keyword
-    ? '🐾 반려동물 동반 가능 관광지'
-    : isSearchMode && keyword
-      ? `"${keyword}" 검색 결과`
-      : '관광지 목록'}
-</h1>
+<ChartTooltip
+  content={({ active, payload }) => {
+    // ... 데이터 추출 로직 ...
+    return (
+      <ChartTooltipContent> {/* ❌ children을 렌더링하지 않음 */}
+        <div className="space-y-2">
+          ... 커스텀 내용 ...
+        </div>
+      </ChartTooltipContent>
+    )
+  }}
+/>
+```
+
+**변경 후:**
+```tsx
+<ChartTooltip
+  content={({ active, payload }) => {
+    // ... 데이터 추출 로직 ...
+    return (
+      // ✅ ChartTooltipContent와 동일한 스타일의 div 사용
+      <div className="border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
+        <div className="space-y-2">
+          ... 커스텀 내용 ...
+        </div>
+      </div>
+    )
+  }}
+/>
+```
+
+### 해결 2: URL 파라미터 이름 수정
+`TypeChart` 컴포넌트의 라우팅 코드를 수정하여 올바른 파라미터 이름(`contentTypeIds`)을 사용하도록 변경했습니다.
+
+**변경 전:**
+```typescript
+router.push(`/?contentTypeId=${data.contentTypeId}`) // ❌ 단수형
+```
+
+**변경 후:**
+```typescript
+router.push(`/?contentTypeIds=${data.contentTypeId}`) // ✅ 복수형
 ```
 
 ---
 
-## 📊 4. 수정된 파일 목록
+## 💡 4. 배운 점 (Key Takeaways)
 
-| 파일 | 수정 내용 |
-|------|----------|
-| `app/page.tsx` | 자동 검색, 더 많은 데이터 가져오기, 공백 처리, 페이지 헤더 |
-| `lib/utils/pet-filter.ts` | 금지/허용 키워드 확장, `isPetAllowed` 함수 개선 |
-| `lib/types/tour.ts` | `PetTourInfo` 타입에 실제 API 필드 추가 (`acmpyTypeCd` 등) |
+1. **라이브러리 컴포넌트의 제약사항 확인:**
+   - `shadcn/ui`의 고수준 컴포넌트(`ChartTooltipContent`)가 항상 `children`을 렌더링한다고 가정하면 안 됨.
+   - 데이터 기반 컴포넌트는 내부 로직에 의해 렌더링 내용이 결정될 수 있음.
+   - 커스텀이 필요한 경우, 래퍼 컴포넌트 대신 하위 요소(HTML/Tailwind)를 직접 사용하는 것이 더 유연함.
 
----
-
-## 💡 5. 배운 점 (Key Takeaways)
-
-1. **API 데이터 제한 이해:**
-   - 공공 API는 모든 데이터가 완전하지 않을 수 있음
-   - `detailPetTour2` API에 등록되지 않은 관광지가 많음
-   - 대안적인 접근 방식 필요 (검색 결과 기반 필터링)
-
-2. **페이지네이션과 필터링의 관계:**
-   - 서버에서 필터링하지 않으면 클라이언트에서 전체 데이터를 가져와야 함
-   - 더 많은 데이터를 가져와서 필터링하는 것이 현실적인 해결책
-
-3. **사용자 입력 정규화:**
-   - 검색어의 공백, 대소문자 등을 정규화하여 일관된 처리
-   - `.replace(/\s+/g, '').toLowerCase()` 패턴 활용
-
-4. **자동 검색의 가치:**
-   - 사용자가 별도로 검색어를 입력하지 않아도 토글만 켜면 작동
-   - 사용자 경험 개선
+2. **시스템 간 인터페이스 일치 (Contract):**
+   - URL 쿼리 파라미터는 페이지 간의 중요한 인터페이스(Contract)임.
+   - 페이지 A에서 페이지 B로 이동할 때, 페이지 B가 기대하는 파라미터 명세를 정확히 따라야 함.
+   - 변수명 하나(`Id` vs `Ids`)의 차이가 기능 전체의 오작동을 유발할 수 있음.
 
 ---
 
-## 🚀 6. 최종 결과
+## 🚀 5. 최종 결과
 
-| 항목 | 이전 | 이후 |
-|------|------|------|
-| 토글만 켜기 | 3개 | **38개** |
-| "반려동물" 검색 + 토글 | 3개 | **38개** |
-| "반려 동물" (공백) 검색 | 인식 안됨 | **정상 작동** |
-| 페이지 헤더 | "관광지 목록" | **"🐾 반려동물 동반 가능 관광지"** |
-
-### 최종 동작 흐름:
-
-```
-1. 토글 ON
-   ↓
-2. 자동으로 "반려" 키워드로 검색
-   ↓
-3. 100개씩 데이터 가져오기
-   ↓
-4. 검색 결과를 반려동물 관련으로 간주
-   ↓
-5. 38개 결과 표시! 🎉
-```
-
+- **툴팁 정상화:** Donut Chart 조각에 마우스를 올리면 **타입명, 개수, 비율**이 정상적으로 표시됨.
+- **필터링 정상화:** 차트 조각을 클릭하면 메인 목록으로 이동하며, 클릭한 **해당 타입으로 정확히 필터링**된 목록이 표시됨.
 - **문제 해결 완료!** 🎉

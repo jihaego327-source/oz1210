@@ -9,27 +9,28 @@
  * 2. 통계 데이터 수집 (Phase 4.2) ✅
  * 3. 통계 요약 카드 (Phase 4.3) ✅
  * 4. 지역별 분포 차트 (Phase 4.4) ✅
- * 5. 타입별 분포 차트 (Phase 4.5) - 향후 구현
+ * 5. 타입별 분포 차트 (Phase 4.5) ✅
  *
  * 현재 구현:
  * - 기본 레이아웃 구조 (시맨틱 HTML)
  * - 반응형 디자인 (모바일 우선)
  * - 통계 요약 카드 (전체 관광지 수, Top 3 지역, Top 3 타입)
  * - 지역별 분포 차트 (Bar Chart, 상위 10개 지역)
- * - 섹션 구조 준비 (타입별 차트)
+ * - 타입별 분포 차트 (Donut Chart, 전체 타입)
  *
  * @dependencies
  * - Next.js App Router (Server Component)
- * - lib/api/stats-api.ts (getStatsSummary, getRegionStats)
+ * - lib/api/stats-api.ts (getStatsSummary, getRegionStats, getTypeStats)
  * - components/stats/stats-summary.tsx
  * - components/stats/region-chart.tsx
+ * - components/stats/type-chart.tsx
  * - Tailwind CSS v4
- * - 향후: components/stats/type-chart.tsx
  */
 
-import { getStatsSummary, getRegionStats } from '@/lib/api/stats-api'
+import { getStatsSummary, getRegionStats, getTypeStats } from '@/lib/api/stats-api'
 import StatsSummary from '@/components/stats/stats-summary'
 import RegionChart from '@/components/stats/region-chart'
+import TypeChart from '@/components/stats/type-chart'
 import { TourApiError } from '@/lib/api/tour-api'
 
 export default async function StatsPage() {
@@ -64,6 +65,23 @@ export default async function StatsPage() {
         '지역별 통계 데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }
   }
+
+  // 타입별 통계 데이터 수집
+  let typeData = null
+  let typeErrorMessage: string | null = null
+
+  try {
+    typeData = await getTypeStats()
+  } catch (error) {
+    console.error('타입별 통계 데이터 수집 실패:', error)
+    if (error instanceof TourApiError) {
+      typeErrorMessage = error.message
+    } else {
+      typeErrorMessage =
+        '타입별 통계 데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }
+  }
+
   return (
     <main className="flex-1">
       <div className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
@@ -124,14 +142,7 @@ export default async function StatsPage() {
             >
               관광 타입별 분포
             </h2>
-            <div className="text-center text-muted-foreground">
-              <p className="text-sm sm:text-base">
-                타입별 분포 차트가 여기에 표시됩니다.
-              </p>
-              <p className="mt-2 text-xs sm:text-sm">
-                (Phase 4.5에서 구현 예정)
-              </p>
-            </div>
+            <TypeChart data={typeData} error={typeErrorMessage} />
           </section>
         </div>
       </div>
