@@ -661,19 +661,32 @@
     - [x] 에러 처리 개선 (에러 메시지 표시)
     - [x] `app/stats/page.tsx` 통합 (getStatsSummary API 호출, StatsSummary 컴포넌트 렌더링)
     - [x] JSDoc 주석 추가 (컴포넌트, 함수 설명 및 사용 예시)
-- [ ] 지역별 분포 차트 (Bar Chart)
-  - [ ] `components/stats/region-chart.tsx` 생성
-    - [ ] shadcn/ui Chart 컴포넌트 설치 (Bar)
-    - [ ] recharts 기반 Bar Chart 구현
-    - [ ] X축: 지역명 (서울, 부산, 제주 등)
-    - [ ] Y축: 관광지 개수
-    - [ ] 상위 10개 지역 표시 (또는 전체)
-    - [ ] 바 클릭 시 해당 지역 목록 페이지로 이동
-    - [ ] 호버 시 정확한 개수 표시
-    - [ ] 다크/라이트 모드 지원
-    - [ ] 반응형 디자인
-    - [ ] 로딩 상태
-    - [ ] 접근성 (ARIA 라벨, 키보드 네비게이션)
+- [x] 지역별 분포 차트 (Bar Chart)
+  - [x] `components/stats/region-chart.tsx` 생성
+    - [x] shadcn/ui Chart 컴포넌트 설치 (Bar)
+    - [x] recharts 기반 Bar Chart 구현
+    - [x] X축: 지역명 (서울, 부산, 제주 등)
+    - [x] Y축: 관광지 개수
+    - [x] 상위 10개 지역 표시 (또는 전체)
+    - [x] 바 클릭 시 해당 지역 목록 페이지로 이동
+    - [x] 호버 시 정확한 개수 표시
+    - [x] 다크/라이트 모드 지원
+    - [x] 반응형 디자인
+    - [x] 로딩 상태
+    - [x] 접근성 (ARIA 라벨, 키보드 네비게이션)
+    ---
+    추가 개발 사항
+    - [x] recharts 라이브러리 설치 (`pnpm add recharts`)
+    - [x] shadcn/ui Chart 컴포넌트 설치 (`pnpx shadcn@latest add chart`)
+    - [x] 데이터 변환 함수 구현 (`transformRegionStatsToChartData`)
+    - [x] BarChart onClick 이벤트 처리 (바 클릭 시 지역 필터링된 홈페이지로 이동)
+    - [x] ChartTooltip 커스텀 구현 (지역명, 개수, 비율 표시)
+    - [x] 숫자 포맷팅 함수 추가 (천 단위 구분)
+    - [x] 반응형 높이 설정 (모바일 300px, 데스크톱 400px)
+    - [x] X축 레이블 회전 (-45도, 긴 지역명 대비)
+    - [x] 접근성 개선 (스크린 리더용 데이터 테이블 추가, aria-label)
+    - [x] `app/stats/page.tsx` 통합 (getRegionStats API 호출, RegionChart 컴포넌트 렌더링)
+    - [x] JSDoc 주석 추가 (컴포넌트, 함수 설명 및 사용 예시)
 - [ ] 타입별 분포 차트 (Donut Chart)
   - [ ] `components/stats/type-chart.tsx` 생성
     - [ ] shadcn/ui Chart 컴포넌트 설치 (Pie/Donut)

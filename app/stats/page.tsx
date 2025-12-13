@@ -8,42 +8,60 @@
  * 1. 페이지 기본 구조 (Phase 4.1) ✅
  * 2. 통계 데이터 수집 (Phase 4.2) ✅
  * 3. 통계 요약 카드 (Phase 4.3) ✅
- * 4. 지역별 분포 차트 (Phase 4.4) - 향후 구현
+ * 4. 지역별 분포 차트 (Phase 4.4) ✅
  * 5. 타입별 분포 차트 (Phase 4.5) - 향후 구현
  *
  * 현재 구현:
  * - 기본 레이아웃 구조 (시맨틱 HTML)
  * - 반응형 디자인 (모바일 우선)
  * - 통계 요약 카드 (전체 관광지 수, Top 3 지역, Top 3 타입)
- * - 섹션 구조 준비 (지역별 차트, 타입별 차트)
+ * - 지역별 분포 차트 (Bar Chart, 상위 10개 지역)
+ * - 섹션 구조 준비 (타입별 차트)
  *
  * @dependencies
  * - Next.js App Router (Server Component)
- * - lib/api/stats-api.ts (getStatsSummary)
+ * - lib/api/stats-api.ts (getStatsSummary, getRegionStats)
  * - components/stats/stats-summary.tsx
+ * - components/stats/region-chart.tsx
  * - Tailwind CSS v4
- * - 향후: components/stats/region-chart.tsx
  * - 향후: components/stats/type-chart.tsx
  */
 
-import { getStatsSummary } from '@/lib/api/stats-api'
+import { getStatsSummary, getRegionStats } from '@/lib/api/stats-api'
 import StatsSummary from '@/components/stats/stats-summary'
+import RegionChart from '@/components/stats/region-chart'
 import { TourApiError } from '@/lib/api/tour-api'
 
 export default async function StatsPage() {
   // 통계 요약 데이터 수집
   let summaryData = null
-  let errorMessage: string | null = null
+  let summaryErrorMessage: string | null = null
 
   try {
     summaryData = await getStatsSummary()
   } catch (error) {
     console.error('통계 요약 데이터 수집 실패:', error)
     if (error instanceof TourApiError) {
-      errorMessage = error.message
+      summaryErrorMessage = error.message
     } else {
-      errorMessage =
+      summaryErrorMessage =
         '통계 데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }
+  }
+
+  // 지역별 통계 데이터 수집
+  let regionData = null
+  let regionErrorMessage: string | null = null
+
+  try {
+    regionData = await getRegionStats()
+  } catch (error) {
+    console.error('지역별 통계 데이터 수집 실패:', error)
+    if (error instanceof TourApiError) {
+      regionErrorMessage = error.message
+    } else {
+      regionErrorMessage =
+        '지역별 통계 데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
     }
   }
   return (
@@ -76,7 +94,7 @@ export default async function StatsPage() {
             >
               통계 요약
             </h2>
-            <StatsSummary data={summaryData} error={errorMessage} />
+            <StatsSummary data={summaryData} error={summaryErrorMessage} />
           </section>
 
           {/* 지역별 분포 차트 섹션 */}
@@ -91,14 +109,7 @@ export default async function StatsPage() {
             >
               지역별 관광지 분포
             </h2>
-            <div className="text-center text-muted-foreground">
-              <p className="text-sm sm:text-base">
-                지역별 분포 차트가 여기에 표시됩니다.
-              </p>
-              <p className="mt-2 text-xs sm:text-sm">
-                (Phase 4.4에서 구현 예정)
-              </p>
-            </div>
+            <RegionChart data={regionData} error={regionErrorMessage} />
           </section>
 
           {/* 타입별 분포 차트 섹션 */}
