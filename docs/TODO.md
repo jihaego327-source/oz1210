@@ -793,10 +793,34 @@
   - [x] `components/tour-detail/detail-info.tsx`에서 unoptimized 속성 제거 (priority는 유지)
   - [x] `components/tour-detail/detail-gallery.tsx`에서 unoptimized 속성 제거 (lazy loading 유지)
   - [x] 이미지 도메인 검증 주석 추가 (next.config.ts에 사용 가능한 도메인 목록 및 추가 방법 안내)
-- [ ] 전역 에러 핸들링
-  - [ ] `app/error.tsx` 생성
-  - [ ] `app/global-error.tsx` 생성
-  - [ ] API 에러 처리 개선
+- [x] 전역 에러 핸들링
+  - [x] `app/error.tsx` 생성
+  - [x] `app/global-error.tsx` 생성
+  - [x] API 에러 처리 개선
+  ---
+  추가 개발 사항
+  - [x] `app/error.tsx` - 라우트 세그먼트 에러 바운더리 구현
+    - [x] Client Component로 구현 (`'use client'`)
+    - [x] `error`, `reset` props 처리
+    - [x] 기존 `Error` 컴포넌트 재사용
+    - [x] 에러 타입별 메시지 구분 (TourApiError, 네트워크 에러, 파싱 에러 등)
+    - [x] `useEffect`로 에러 로깅 (구조화된 로그: 메시지, 스택, digest, 시간, 타입)
+    - [x] 재시도 버튼 (`reset()` 호출)
+    - [x] 홈으로 돌아가기 버튼
+    - [x] 개발 환경에서만 상세 에러 정보 표시 (details 태그)
+  - [x] `app/global-error.tsx` - 전역 에러 바운더리 구현
+    - [x] Client Component로 구현 (`'use client'`)
+    - [x] `<html>`, `<body>` 태그 포함 (루트 레이아웃 대체)
+    - [x] `error`, `reset` props 처리
+    - [x] 최소한의 스타일로 에러 UI 표시 (Tailwind CSS)
+    - [x] `useEffect`로 에러 로깅 (구조화된 로그)
+    - [x] 재시도 버튼 및 홈으로 이동 버튼
+    - [x] 개발 환경에서만 상세 에러 정보 표시
+  - [x] API 에러 처리 개선
+    - [x] `lib/api/stats-api.ts` - TourApiError 활용 강화, 에러 로깅 구조화
+    - [x] `lib/api/supabase-api.ts` - 에러 로깅 구조화 (메시지, 스택, 컨텍스트, 시간)
+    - [x] 에러 메시지 한글화 유지
+    - [x] 에러 타입별 처리 로직 통일
 - [ ] 404 페이지
   - [ ] `app/not-found.tsx` 생성
     - [ ] 사용자 친화적인 메시지

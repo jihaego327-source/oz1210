@@ -58,7 +58,13 @@ export async function getSupabaseUserId(
 
     return data?.id || null;
   } catch (error) {
-    console.error('Supabase user ID 조회 실패:', error);
+    // 에러 로깅 (구조화된 로깅)
+    console.error('Supabase user ID 조회 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      clerkId,
+      timestamp: new Date().toISOString(),
+    });
     return null;
   }
 }
@@ -102,7 +108,14 @@ export async function getBookmark(
 
     return data as Bookmark;
   } catch (error) {
-    console.error('북마크 조회 실패:', error);
+    // 에러 로깅 (구조화된 로깅)
+    console.error('북마크 조회 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      userId,
+      contentId,
+      timestamp: new Date().toISOString(),
+    });
     return null;
   }
 }
@@ -149,7 +162,14 @@ export async function addBookmark(
 
     return data as Bookmark;
   } catch (error) {
-    console.error('북마크 추가 실패:', error);
+    // 에러 로깅 (구조화된 로깅)
+    console.error('북마크 추가 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      userId,
+      contentId,
+      timestamp: new Date().toISOString(),
+    });
     return null;
   }
 }
@@ -188,7 +208,14 @@ export async function removeBookmark(
 
     return true;
   } catch (error) {
-    console.error('북마크 제거 실패:', error);
+    // 에러 로깅 (구조화된 로깅)
+    console.error('북마크 제거 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      userId,
+      contentId,
+      timestamp: new Date().toISOString(),
+    });
     return false;
   }
 }
@@ -223,7 +250,13 @@ export async function getUserBookmarks(
 
     return (data || []) as Bookmark[];
   } catch (error) {
-    console.error('북마크 목록 조회 실패:', error);
+    // 에러 로깅 (구조화된 로깅)
+    console.error('북마크 목록 조회 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      userId,
+      timestamp: new Date().toISOString(),
+    });
     return [];
   }
 }

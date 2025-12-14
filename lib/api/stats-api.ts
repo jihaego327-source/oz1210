@@ -107,11 +107,26 @@ async function getRegionStatsInternal(): Promise<RegionStats[]> {
       percentage: totalCount > 0 ? (stat.count / totalCount) * 100 : 0,
     }));
   } catch (error) {
+    // 에러 로깅
+    console.error('지역별 통계 수집 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    // TourApiError로 래핑하여 일관된 에러 처리
+    const errorMessage =
+      error instanceof TourApiError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : '알 수 없는 오류';
+
     throw new TourApiError(
-      `지역별 통계 수집 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`,
-      undefined,
-      undefined,
-      error as Error
+      `지역별 통계 수집 중 오류가 발생했습니다: ${errorMessage}`,
+      error instanceof TourApiError ? error.statusCode : undefined,
+      error instanceof TourApiError ? error.response : undefined,
+      error instanceof Error ? error : new Error(String(error))
     );
   }
 }
@@ -201,11 +216,26 @@ async function getTypeStatsInternal(): Promise<TypeStats[]> {
       percentage: totalCount > 0 ? (stat.count / totalCount) * 100 : 0,
     }));
   } catch (error) {
+    // 에러 로깅
+    console.error('타입별 통계 수집 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    // TourApiError로 래핑하여 일관된 에러 처리
+    const errorMessage =
+      error instanceof TourApiError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : '알 수 없는 오류';
+
     throw new TourApiError(
-      `타입별 통계 수집 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`,
-      undefined,
-      undefined,
-      error as Error
+      `타입별 통계 수집 중 오류가 발생했습니다: ${errorMessage}`,
+      error instanceof TourApiError ? error.statusCode : undefined,
+      error instanceof TourApiError ? error.response : undefined,
+      error instanceof Error ? error : new Error(String(error))
     );
   }
 }
@@ -271,11 +301,26 @@ async function getStatsSummaryInternal(): Promise<StatsSummary> {
       lastUpdated,
     };
   } catch (error) {
+    // 에러 로깅
+    console.error('통계 요약 생성 실패:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    // TourApiError로 래핑하여 일관된 에러 처리
+    const errorMessage =
+      error instanceof TourApiError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : '알 수 없는 오류';
+
     throw new TourApiError(
-      `통계 요약 생성 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`,
-      undefined,
-      undefined,
-      error as Error
+      `통계 요약 생성 중 오류가 발생했습니다: ${errorMessage}`,
+      error instanceof TourApiError ? error.statusCode : undefined,
+      error instanceof TourApiError ? error.response : undefined,
+      error instanceof Error ? error : new Error(String(error))
     );
   }
 }
