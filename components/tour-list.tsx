@@ -161,7 +161,7 @@ export default function TourList({
       role="list"
       aria-label="관광지 목록"
     >
-      {items.map((tour) => (
+      {items.map((tour, index) => (
         <div
           key={tour.contentid}
           role="listitem"
@@ -176,6 +176,7 @@ export default function TourList({
           <TourCard
             tour={tour}
             onClick={() => onTourClick?.(tour)}
+            priority={index < 6}
           />
         </div>
       ))}

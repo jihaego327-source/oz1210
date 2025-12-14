@@ -22,6 +22,7 @@
  * - Tailwind CSS v4
  */
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { TourItem } from '@/lib/types/tour';
@@ -37,6 +38,8 @@ interface TourCardProps {
   className?: string;
   /** 카드 클릭 핸들러 (지도 이동용) */
   onClick?: () => void;
+  /** 이미지 우선 로딩 여부 (above-the-fold 이미지에 사용) */
+  priority?: boolean;
 }
 
 /**
@@ -47,10 +50,16 @@ interface TourCardProps {
  * <TourCard tour={tourItem} onClick={() => handleMapMove(tour)} />
  * ```
  */
-export default function TourCard({ tour, className, onClick }: TourCardProps) {
+export default function TourCard({ tour, className, onClick, priority = false }: TourCardProps) {
   // 이미지 URL 결정 (firstimage2 우선, 없으면 firstimage, 둘 다 없으면 기본 이미지)
-  const imageUrl =
-    tour.firstimage2 || tour.firstimage || '/placeholder-tour.jpg';
+  const [imageUrl, setImageUrl] = useState(
+    tour.firstimage2 || tour.firstimage || '/placeholder-tour.png'
+  );
+
+  // tour prop이 변경되면 이미지 URL 초기화
+  useEffect(() => {
+    setImageUrl(tour.firstimage2 || tour.firstimage || '/placeholder-tour.png');
+  }, [tour.firstimage, tour.firstimage2]);
 
   // 관광 타입 이름 가져오기
   const typeName = CONTENT_TYPE_NAMES[tour.contenttypeid] || '관광지';
@@ -87,7 +96,8 @@ export default function TourCard({ tour, className, onClick }: TourCardProps) {
           fill
           className="object-cover transition-transform group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          unoptimized={imageUrl.startsWith('http') && !imageUrl.includes('data.go.kr')}
+          priority={priority}
+          onError={() => setImageUrl('/placeholder-tour.png')}
         />
       </div>
 

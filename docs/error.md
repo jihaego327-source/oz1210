@@ -1206,3 +1206,84 @@ router.push(`/?contentTypeIds=${data.contentTypeId}`) // ✅ 복수형
 - **데이터 정확성:** 표시된 데이터가 실제 데이터와 일치하며, 숫자 포맷팅도 올바르게 작동
 - **안정성 향상:** 데이터 유효성 검사 추가로 에러 발생 가능성 감소
 - **문제 해결 완료!** 🎉
+
+---
+
+# 이미지 최적화 후 이미지 미표시(엑스박스) 문제 해결 과정 (Troubleshooting Report)
+
+## 📌 1. 문제 상황 (Problem)
+
+**증상:**
+- Phase 6 이미지 최적화 작업 후 몇몇 관광지의 이미지가 "이미지 없음" 아이콘이나 텍스트 대신 단순히 비어있거나 깨진 이미지(엑스박스)로 표시됨.
+- 콘솔에 별다른 에러 메시지가 표시되지 않음.
+- Fallback 이미지가 제대로 작동하지 않는 것으로 보임.
+
+**환경:**
+- **Framework:** Next.js 15 (App Router)
+- **Component:** `TourCard`, `DetailInfo`, `DetailGallery`
+- **Asset:** `public/placeholder-tour.jpg` (누락됨)
+
+---
+
+## 🔍 2. 원인 분석 (Root Cause Analysis)
+
+### 1차 원인: Fallback 이미지 파일 부재
+- **확인:** 코드상에서는 `/placeholder-tour.jpg`를 폴백 이미지로 사용하도록 지정되어 있었으나, 실제 `public` 디렉토리에 해당 파일이 존재하지 않음.
+- **결과:** 원본 이미지 로딩 실패 시 폴백 이미지를 요청하지만, 이마저도 404가 발생하여 이미지가 깨짐.
+
+### 2차 원인: `onError` 핸들러 미흡 및 상태 관리 부재
+- **확인:** `TourCard`, `DetailInfo` 컴포넌트에서 `Next/Image`의 `onError` 이벤트를 처리하지 않거나, 단순히 `null`로 설정하여 이미지를 숨기는 처리가 되어 있었음.
+- **결과:** 이미지 URL이 유효하지 않거나 로드 실패 시 대체 이미지를 보여주는 로직이 제대로 동작하지 않음.
+- **DetailGallery:** 갤러리 슬라이더 내의 개별 이미지 에러 처리가 되어 있지 않아, 하나만 에러가 나도 사용자 경험이 저하됨.
+
+---
+
+## ✅ 3. 해결 방법 (Solution)
+
+### 1. Fallback 이미지 생성 및 추가
+- 깔끔한 디자인의 `placeholder-tour.png` 이미지를 생성하여 `public` 디렉토리에 추가함.
+- 파일 확장자를 `.png`로 통일.
+
+### 2. 컴포넌트별 에러 핸들링 로직 추가
+
+#### `components/tour-card.tsx` (목록 카드)
+- `useState`를 사용하여 이미지 URL 상태 관리.
+- `useEffect`로 props 변경 시 URL 초기화.
+- `onError` 핸들러에서 상태를 `/placeholder-tour.png`로 업데이트하도록 수정.
+
+```tsx
+const [imageUrl, setImageUrl] = useState(
+  tour.firstimage2 || tour.firstimage || '/placeholder-tour.png'
+);
+
+// ...
+
+<Image
+  // ...
+  onError={() => setImageUrl('/placeholder-tour.png')}
+/>
+```
+
+#### `components/tour-detail/detail-info.tsx` (상세 페이지 대표 이미지)
+- `TourCard`와 동일하게 상태 관리 및 `onError` 핸들러 추가.
+- 이미지 로드 실패 시 `null` 대신 플래스홀더 이미지를 보여주도록 개선.
+
+#### `components/tour-detail/detail-gallery.tsx` (갤러리)
+- `GalleryItem` 컴포넌트를 분리하여 개별 이미지의 상태를 독립적으로 관리.
+- 갤러리 내 특정 이미지가 로드되지 않아도 해당 이미지만 플래스홀더로 대체되고 나머지는 정상 표시되도록 개선.
+
+---
+
+## 💡 4. 배운 점 (Key Takeaways)
+
+1.  **Fallback 리소스 확인의 중요성:** 코드로직이 완벽해도 참조하는 리소스 파일이 실제로 존재하는지 꼼꼼히 확인해야 함.
+2.  **Next/Image의 에러 핸들링:** 외부 이미지(Remote Image)를 사용할 때는 언제든 로딩 실패나 링크 만료가 발생할 수 있으므로 `onError` 처리가 필수적임.
+3.  **사용자 경험(UX) 고려:** 이미지가 없을 때 아예 숨기거나 깨진 이미지를 보여주는 것보다, 준비된 플래스홀더 이미지를 보여주는 것이 훨씬 완성도 높은 인상을 줌.
+
+---
+
+## 🚀 5. 최종 결과
+
+- 유효하지 않은 이미지 URL이나 로딩 실패 시 `/placeholder-tour.png` 이미지가 정상적으로 표시됨.
+- "이미지 없음" 텍스트나 깨진 이미지가 사라지고 깔끔한 UI 유지.
+- **문제 해결 완료!** 🎉

@@ -69,6 +69,47 @@ interface DetailGalleryProps {
  * - 반응형: 모바일 1개, 태블릿 2개, 데스크톱 3개
  * - 터치 제스처: 모바일에서 스와이프 지원
  */
+
+interface GalleryItemProps {
+  image: TourImage;
+  index: number;
+  title: string;
+  onClick: (index: number) => void;
+}
+
+function GalleryItem({ image, index, title, onClick }: GalleryItemProps) {
+  const [imgSrc, setImgSrc] = useState<string | null>(
+    image.originimgurl || image.smallimageurl || null
+  );
+
+  if (!imgSrc) return null;
+
+  return (
+    <div
+      className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity touch-manipulation"
+      onClick={() => onClick(index)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(index);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`${image.imgname || title} 이미지 ${index + 1} 보기`}
+    >
+      <Image
+        src={imgSrc}
+        alt={image.imgname || `${title} 이미지 ${index + 1}`}
+        fill
+        className="object-cover"
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        onError={() => setImgSrc('/placeholder-tour.png')}
+      />
+    </div>
+  );
+}
+
 export default function DetailGallery({ contentId, title }: DetailGalleryProps) {
   /** 이미지 목록 상태 */
   const [images, setImages] = useState<TourImage[]>([]);
@@ -159,7 +200,7 @@ export default function DetailGallery({ contentId, title }: DetailGalleryProps) 
         totalImages: images.length,
         hasImageUrl: !!imageUrl,
       });
-      
+
       // 이미지 URL이 유효한지 확인
       if (imageUrl) {
         console.log('[DetailGallery] 이미지 URL 확인:', imageUrl);
@@ -203,37 +244,16 @@ export default function DetailGallery({ contentId, title }: DetailGalleryProps) 
             }}
             className="w-full"
           >
-            {images.map((image, index) => {
-              const imageUrl = image.originimgurl || image.smallimageurl;
-              if (!imageUrl) return null;
-
-              return (
-                <SwiperSlide key={image.serialnum || index}>
-                  <div
-                    className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity touch-manipulation"
-                    onClick={() => handleImageClick(index)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleImageClick(index);
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${image.imgname || title} 이미지 ${index + 1} 보기`}
-                  >
-                    <Image
-                      src={imageUrl}
-                      alt={image.imgname || `${title} 이미지 ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      unoptimized={imageUrl.startsWith('http') && !imageUrl.includes('data.go.kr')}
-                    />
-                  </div>
-                </SwiperSlide>
-              );
-            })}
+            {images.map((image, index) => (
+              <SwiperSlide key={image.serialnum || index}>
+                <GalleryItem
+                  image={image}
+                  index={index}
+                  title={title}
+                  onClick={handleImageClick}
+                />
+              </SwiperSlide>
+            ))}
           </Swiper>
         </CardContent>
       </Card>

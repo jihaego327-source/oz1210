@@ -776,14 +776,23 @@
 
 ## Phase 6: 최적화 & 배포
 
-- [ ] 이미지 최적화
-  - [ ] `next.config.ts` 외부 도메인 설정
-    - [ ] 한국관광공사 이미지 도메인 추가
-    - [ ] 네이버 지도 이미지 도메인 추가
-  - [ ] Next.js Image 컴포넌트 사용 확인
-    - [ ] priority 속성 (above-the-fold)
-    - [ ] lazy loading (below-the-fold)
-    - [ ] responsive sizes 설정
+- [x] 이미지 최적화
+  - [x] `next.config.ts` 외부 도메인 설정
+    - [x] 한국관광공사 이미지 도메인 추가
+    - [x] 네이버 지도 이미지 도메인 추가
+  - [x] Next.js Image 컴포넌트 사용 확인
+    - [x] priority 속성 (above-the-fold)
+    - [x] lazy loading (below-the-fold)
+    - [x] responsive sizes 설정
+  ---
+  추가 개발 사항
+  - [x] `next.config.ts`에 한국관광공사 이미지 도메인 추가 (www.visitkorea.or.kr, tong.visitkorea.or.kr, api.visitkorea.or.kr)
+  - [x] `next.config.ts`에 네이버 지도 이미지 도메인 추가 (naver.com, map.naver.com)
+  - [x] `components/tour-card.tsx`에서 unoptimized 속성 제거 및 priority prop 추가
+  - [x] `components/tour-list.tsx`에서 첫 6개 카드에만 priority 적용 (index < 6)
+  - [x] `components/tour-detail/detail-info.tsx`에서 unoptimized 속성 제거 (priority는 유지)
+  - [x] `components/tour-detail/detail-gallery.tsx`에서 unoptimized 속성 제거 (lazy loading 유지)
+  - [x] 이미지 도메인 검증 주석 추가 (next.config.ts에 사용 가능한 도메인 목록 및 추가 방법 안내)
 - [ ] 전역 에러 핸들링
   - [ ] `app/error.tsx` 생성
   - [ ] `app/global-error.tsx` 생성

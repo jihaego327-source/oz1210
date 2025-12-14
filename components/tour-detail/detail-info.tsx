@@ -25,7 +25,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { MapPin, Phone, Globe, ExternalLink, Copy, Check } from 'lucide-react';
@@ -46,9 +46,14 @@ interface DetailInfoProps {
  */
 export default function DetailInfo({ detail }: DetailInfoProps) {
   const [copied, setCopied] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    detail.firstimage || detail.firstimage2 || '/placeholder-tour.png'
+  );
 
-  // 이미지 URL 결정 (firstimage 우선, 없으면 firstimage2)
-  const imageUrl = detail.firstimage || detail.firstimage2;
+  // detail prop이 변경되면 이미지 URL 초기화
+  useEffect(() => {
+    setImageUrl(detail.firstimage || detail.firstimage2 || '/placeholder-tour.png');
+  }, [detail.firstimage, detail.firstimage2]);
 
   // 주소 조합
   const address = [detail.addr1, detail.addr2].filter(Boolean).join(' ');
@@ -85,9 +90,9 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
    */
   const normalizeHomepageUrl = (url: string | undefined): string | null => {
     if (!url || url.trim() === '') return null;
-    
+
     const trimmedUrl = url.trim();
-    
+
     // 이미 http:// 또는 https://로 시작하는 경우
     if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
       try {
@@ -99,15 +104,15 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
         return null;
       }
     }
-    
+
     // 상대 경로인 경우 (예: /path/to/page) null 반환 (표시하지 않음)
     if (trimmedUrl.startsWith('/')) {
       return null;
     }
-    
+
     // 프로토콜이 없는 경우 https:// 추가
     const normalizedUrl = `https://${trimmedUrl}`;
-    
+
     try {
       // URL 유효성 검증
       new URL(normalizedUrl);
@@ -154,7 +159,7 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
       await navigator.clipboard.writeText(address);
       setCopied(true);
       toast.success('주소가 클립보드에 복사되었습니다');
-      
+
       // 2초 후 복사 상태 초기화
       setTimeout(() => {
         setCopied(false);
@@ -177,7 +182,7 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-2 sm:px-2.5 py-0.5 text-xs font-medium text-primary">
                   {typeName}
                 </span>
-                
+
                 {/* 카테고리 뱃지 */}
                 {detail.cat1 && (
                   <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted/50 px-2 sm:px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
@@ -222,8 +227,8 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, (max-width: 1024px) 80vw, 896px"
-                unoptimized={imageUrl.startsWith('http') && !imageUrl.includes('data.go.kr')}
                 priority
+                onError={() => setImageUrl('/placeholder-tour.png')}
               />
             </div>
           ) : (
